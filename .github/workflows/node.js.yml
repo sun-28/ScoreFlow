@@ -58,6 +58,7 @@ jobs:
           cd ${{ needs.checkout.outputs.backend_path }}
           npm install
           echo "${{secrets.BACK_ENV}}" > .env
-          pm2 restart API    
+          pm2 restart API --update-env
           sudo systemctl restart nginx
+
 
