@@ -4,7 +4,6 @@ on:
   push:
     branches:
       - main
-
 jobs:
   checkout:
     name: Checkout code
@@ -20,8 +19,8 @@ jobs:
       - name: Set frontend and backend paths
         id: set-path
         run: |
-          echo "frontend_path=frontend" >> $GITHUB_ENV
-          echo "backend_path=backend" >> $GITHUB_ENV
+          echo "::set-output name=frontend_path::frontend"
+          echo "::set-output name=backend_path::backend"
 
   frontend:
     name: frontend CI/CD
@@ -31,17 +30,17 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v3
         with:
-          node-version: '16'
+          node-version: "16"
 
       - name: Install frontend dependencies
         run: |
-          cd ${{ env.frontend_path }}
+          cd ${{ needs.checkout.outputs.frontend_path }}
           npm install
 
       - name: Build frontend
         run: |
-          cd ${{ env.frontend_path }}
-          echo "${{ secrets.FRONT_ENV }}" > .env
+          cd ${{ needs.checkout.outputs.frontend_path }}
+          echo "${{secrets.FRONT_ENV}}" > .env
           npm run build
           sudo systemctl restart nginx
 
@@ -53,12 +52,12 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v3
         with:
-          node-version: '16'
-
-      - name: Install Backend dependencies
+          node-version: "16"
+      - name: Install backend dependencies
         run: |
-          cd ${{ env.backend_path }}
+          cd ${{ needs.checkout.outputs.backend_path }}
           npm install
-          echo "${{ secrets.BACK_ENV }}" > .env
-          pm2 restart API
+          echo "${{secrets.BACK_ENV}}" > .env
+          pm2 restart API    
           sudo systemctl restart nginx
+
