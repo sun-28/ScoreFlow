@@ -13,8 +13,8 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-app.get("helo", (req, res) => {
-  res.json({ Hello: "World" });
+app.get("/helo", (req, res) => {
+  return res.json({ Hello: "World" });
 });
 
 app.listen(PORT, () => {
