@@ -1,0 +1,64 @@
+name: CI/CD
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  checkout:
+    name: Checkout code
+    runs-on: self-hosted
+    outputs:
+      frontend_path: ${{ steps.set-path.outputs.frontend_path }}
+      backend_path: ${{ steps.set-path.outputs.backend_path }}
+    steps:
+      - name: Checkout code
+        id: checkout
+        uses: actions/checkout@v4
+
+      - name: Set frontend and backend paths
+        id: set-path
+        run: |
+          echo "frontend_path=frontend" >> $GITHUB_ENV
+          echo "backend_path=backend" >> $GITHUB_ENV
+
+  frontend:
+    name: frontend CI/CD
+    runs-on: self-hosted
+    needs: checkout
+    steps:
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '16'
+
+      - name: Install frontend dependencies
+        run: |
+          cd ${{ env.frontend_path }}
+          npm install
+
+      - name: Build frontend
+        run: |
+          cd ${{ env.frontend_path }}
+          echo "${{ secrets.FRONT_ENV }}" > .env
+          npm run build
+          sudo systemctl restart nginx
+
+  backend:
+    name: backend CI/CD
+    runs-on: self-hosted
+    needs: checkout
+    steps:
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '16'
+
+      - name: Install Backend dependencies
+        run: |
+          cd ${{ env.backend_path }}
+          npm install
+          echo "${{ secrets.BACK_ENV }}" > .env
+          pm2 restart API
+          sudo systemctl restart nginx
