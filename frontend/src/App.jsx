@@ -1,7 +1,12 @@
 import React from "react";
+import CodeEditor from "./components/CodeEditor";
 
 const App = () => {
-  return <div className="text-5xl">Hola</div>;
+  return (
+    <>
+      <CodeEditor />
+    </>
+  );
 };
 
 export default App;
