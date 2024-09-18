@@ -1,20 +1,20 @@
-const connectToMongo = require("./db");
+const connectToMongo = require("./config/db");
 const express = require("express");
 const cors = require("cors");
 const dotenv = require("dotenv");
-const PORT = process.env.BACK_PORT;
-
+const PORT = process.env.API_PORT;
 dotenv.config();
-
 connectToMongo();
 
 const app = express();
 
 app.use(cors());
 app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+app.use("/code", require("./routes/submission"));
 
-app.get("/helo", (req, res) => {
-  return res.json({ Hello: "World" });
+app.get("/", (req, res) => {
+  return res.send("Server Healthy!");
 });
 
 app.listen(PORT, () => {
