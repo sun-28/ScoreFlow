@@ -21,7 +21,6 @@ const io = socketIo(3001, {
   },
 });
 
-const TIME_LIMIT = 1000; // Timeout for Docker command in milliseconds
 const MEMORY_LIMIT = "256mb";
 
 const imageSelector = (lang) => {
@@ -62,9 +61,10 @@ codeQueue.process(async (job) => {
 
       const dockerCommand = `docker run --rm --memory=${MEMORY_LIMIT} -v ${tempCodeFile}:/app/code.${language} -v ${tempInputFile}:/app/input.txt ${dockerImage} `;
 
+
       try {
         const { stdout, stderr } = await execPromise(dockerCommand, {
-          timeout: TIME_LIMIT + 3000,
+          timeout: 5000,
         });
 
         if (stderr) throw new Error(stderr);
@@ -80,8 +80,8 @@ codeQueue.process(async (job) => {
           passed,
         });
       } catch (error) {
-        console.log(error);
-        let errorMessage = error.killed ? "Time Limit Exceeded" : error.message;
+
+        let errorMessage = (error.killed || error.code=="137") ? "Time Limit Exceeded" : error.stderr.substring(0,500);
         if (errorMessage.includes("out of memory"))
           errorMessage = "Memory Limit Exceeded";
 
@@ -108,8 +108,8 @@ codeQueue.process(async (job) => {
   }
 });
 
-codeQueue.on("completed", (job, result) => {
-  console.log(`Job ${job.id} completed with result:`, result);
+codeQueue.on("completed", (job) => {
+  console.log(`Job ${job.id} completed`);
 });
 
 codeQueue.on("failed", (job, error) => {
