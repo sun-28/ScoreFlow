@@ -4,48 +4,51 @@ import { toast } from "react-toastify";
 import ProblemDescription from "./ProblemDescription";
 import CodeEditor from "./CodeEditor";
 import TestCases from "./TestCases";
+import ResultModal from "./ResultModal";
 import io from "socket.io-client";
 import axios from "axios";
 
 const socket = io("http://localhost:3001");
 
 function Workspace() {
-  const details = {
-    id: "1",
-    title: "Add Two Numbers",
-    difficulty: "Easy",
-    category: "Math",
-    order: 1,
-    description:
-      "Write a function that takes two integers and returns their sum. Make sure your function handles both positive and negative numbers.",
-    examples: [
-      {
-        input: "2 3",
-        output: "5",
-        explanation: "The sum of 2 and 3 is 5.",
-      },
-      {
-        input: "-1 5",
-        output: "4",
-        explanation: "The sum of -1 and 5 is 4.",
-      },
-    ],
-    constraints: [
-      "The input integers must be between -1000 and 1000.",
-      "The function should return a single integer.",
-    ],
-    testcases: [
-      { input: "2 3", output: "5" },
-      { input: "10 20", output: "30" },
-      { input: "-5 15", output: "10" },
-    ],
-  };
+   const details = {
+     id: "1",
+     title: "Add Two Numbers",
+     difficulty: "Easy",
+     category: "Math",
+     order: 1,
+     description:
+       "Write a function that takes two integers and returns their sum. Make sure your function handles both positive and negative numbers.",
+     examples: [
+       {
+         input: "2 3",
+         expectedOutput: "5",
+         explanation: "The sum of 2 and 3 is 5.",
+       },
+       {
+         input: "-1 5",
+         expectedOutput: "4",
+         explanation: "The sum of -1 and 5 is 4.",
+       },
+     ],
+     constraints: [
+       "The input integers must be between -1000 and 1000.",
+       "The function should return a single integer.",
+     ],
+     testCases: [
+       { input: "2 3", expectedOutput: "5" },
+       { input: "10 20", expectedOutput: "30" },
+       { input: "-5 15", expectedOutput: "10" },
+     ],
+   };
 
   const [code, setCode] = useState("");
+  const [language, setLanguage] = useState("cpp");
   const [processing, setProcessing] = useState(false);
   const [results, setResults] = useState([]);
+  const [showModal, setShowModal] = useState(false);
 
-  const testcases = details.testcases;
+  const testCases = details.testCases;
 
   useEffect(() => {
     socket.on("connect", () => {
@@ -53,17 +56,25 @@ function Workspace() {
     });
 
     socket.on("test-case-result", (data) => {
-      setResults((prevResults) => [...prevResults, data]);
+      setResults((prevResults) => {
+        const updatedResults = prevResults.map((result) =>
+          result.input === data.input ? data : result
+        );
+        return updatedResults;
+      });
     });
 
     socket.on("job-completed", () => {
       console.log("All test cases completed");
       toast.success("All test cases completed");
+      setProcessing(false);
+      setShowModal(true); // Show results modal when job is completed
     });
 
     socket.on("job-failed", (error) => {
       console.error("Job failed:", error);
       toast.error("Job failed: " + error.message);
+      setProcessing(false);
     });
 
     return () => {
@@ -77,38 +88,66 @@ function Workspace() {
     setCode(data);
   };
 
+  const onLanguageChange = (newLanguage) => {
+    setLanguage(newLanguage);
+  };
+
   const handleCompile = async () => {
     setProcessing(true);
+    setResults(
+      testCases.map((testCase) => ({
+        ...testCase,
+        output: "Running...",
+        passed: null,
+      }))
+    );
+
     try {
-      // Send code and test cases to the server
-      const response = await axios.post("http://localhost:3000/submit", {
+      const response = await axios.post("http://localhost:3000/code/submit", {
         code,
-        testcases,
+        language,
+        testCases,
+        socketId: socket.id,
       });
 
       console.log("Server response:", response.data);
-      // Optionally handle server response here
-
     } catch (error) {
       console.error("Error submitting code:", error);
       toast.error("Error submitting code: " + error.message);
+      setProcessing(false);
     }
-    setProcessing(false);
+  };
+
+  const handleCloseModal = () => {
+    setShowModal(false);
   };
 
   return (
-    <Split className="split" minSize={0}>
-      <ProblemDescription details={details} />
-      <Split className="split-vertical" direction="vertical">
-        <CodeEditor onChange={onChange} />
-        <TestCases
-          handleCompile={handleCompile}
-          testcases={testcases}
-          processing={processing}
-          results={results}
-        />
+    <div className="workspace">
+      <Split className="split" minSize={0}>
+        <ProblemDescription details={details} />
+        <Split className="split-vertical" direction="vertical">
+          <CodeEditor
+            code={code}
+            onChange={onChange}
+            language={language}
+            onLanguageChange={onLanguageChange}
+          />
+          <TestCases
+            handleCompile={handleCompile}
+            testCases={testCases}
+            processing={processing}
+            results={results}
+          />
+        </Split>
       </Split>
-    </Split>
+      <ResultModal
+        show={showModal}
+        onClose={handleCloseModal}
+        results={results}
+        processing={processing}
+      />
+    </div>
   );
 }
 
