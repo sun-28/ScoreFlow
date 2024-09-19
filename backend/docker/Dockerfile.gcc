@@ -4,4 +4,4 @@ WORKDIR /app
 
 COPY . .
 
-CMD ["sh", "-c", "g++ code.cpp -o code && ./code < input.txt"]
+CMD ["sh","-c","g++ code.cpp -o code && ./code < input.txt","timeout","1"]

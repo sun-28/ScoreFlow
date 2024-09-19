@@ -5,7 +5,6 @@ import axios from "axios";
 
 const socket = io("http://localhost:3001");
 
-// Sample code templates
 const sampleCode = {
   javascript: `// JavaScript sample code
 function add(a, b) {
@@ -38,7 +37,7 @@ public class Main {
   public static void main(String[] args) {
     System.out.println(add(2, 3));
   }
-}`
+}`,
 };
 
 const CodeEditor = () => {
@@ -52,10 +51,12 @@ const CodeEditor = () => {
 
   useEffect(() => {
     socket.on("connect", () => {
+      console.log(socket.id);
       setSocketId(socket.id);
     });
 
     socket.on("test-case-result", (data) => {
+      console.log(data)
       setResults((prevResults) => [...prevResults, data]);
     });
 
@@ -82,11 +83,11 @@ const CodeEditor = () => {
 
   const handleSubmit = async () => {
     try {
-      const response = await axios.post("http://localhost:3000/submit", {
+      const response = await axios.post("http://localhost:3000/code/submit", {
         code,
         language,
         testCases,
-        socketId,
+        socketId
       });
       console.log(response.data);
       setResults([]);

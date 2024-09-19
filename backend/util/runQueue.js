@@ -21,7 +21,7 @@ const io = socketIo(3001, {
   },
 });
 
-const TIME_LIMIT = 1000;
+const TIME_LIMIT = 1000; // Timeout for Docker command in milliseconds
 const MEMORY_LIMIT = "256mb";
 
 const imageSelector = (lang) => {
@@ -60,18 +60,17 @@ codeQueue.process(async (job) => {
 
       fs.writeFileSync(tempInputFile, input);
 
-      const dockerCommand = `docker run --rm --memory=${MEMORY_LIMIT} -v ${tempCodeFile}:/app/code.${language} -v ${tempInputFile}:/app/input.txt ${dockerImage}`;
+      const dockerCommand = `docker run --rm --memory=${MEMORY_LIMIT} -v ${tempCodeFile}:/app/code.${language} -v ${tempInputFile}:/app/input.txt ${dockerImage} `;
 
       try {
         const { stdout, stderr } = await execPromise(dockerCommand, {
-          timeout: TIME_LIMIT,
+          timeout: TIME_LIMIT + 3000,
         });
 
         if (stderr) throw new Error(stderr);
 
         const actualOutput = stdout.trim();
         const passed = actualOutput === expectedOutput.trim();
-        console.log(passed);
 
         io.to(socketId).emit("test-case-result", {
           testCase: i + 1,
@@ -99,7 +98,6 @@ codeQueue.process(async (job) => {
     }
     io.to(socketId).emit("job-completed", { status: "completed" });
   } catch (error) {
-    console.log(error);
     io.to(socketId).emit("job-failed", { error: error.message });
   } finally {
     try {
