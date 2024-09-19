@@ -2,6 +2,10 @@ FROM python:latest
 
 WORKDIR /app
 
-COPY . .
+COPY pythonTLE.sh /app/entrypoint.sh
 
-CMD ["sh", "-c", "python code.py < input.txt"]
+RUN chmod +x /app/entrypoint.sh
+
+ENTRYPOINT ["/app/entrypoint.sh"]
+
+CMD ["python", "Main.py", "<", "input.txt"]

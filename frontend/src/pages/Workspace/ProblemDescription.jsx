@@ -24,7 +24,7 @@ function ProblemDescription({ details }) {
             <div className="font-semibold">Example {index + 1}:</div>
             <div className="text-sm mt-2">
               <strong>Input:</strong> {example.input} <br />
-              <strong>Output:</strong> {example.output}
+              <strong>Output:</strong> {example.expectedOutput}
               <br />
               <strong>Explanation:</strong> {example.explanation}
             </div>

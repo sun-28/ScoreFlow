@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { useParams } from "react-router-dom"; // To get route params
 import Split from "react-split";
 import { toast } from "react-toastify";
 import ProblemDescription from "./ProblemDescription";
@@ -7,40 +8,13 @@ import TestCases from "./TestCases";
 import ResultModal from "./ResultModal";
 import io from "socket.io-client";
 import axios from "axios";
-
+import {ques} from "./ques";
 const socket = io("http://localhost:3001");
 
 function Workspace() {
-  const details = {
-    id: "1",
-    title: "Add Two Numbers",
-    difficulty: "Easy",
-    category: "Math",
-    order: 1,
-    description:
-      "Write a function that takes two integers and returns their sum. Make sure your function handles both positive and negative numbers.",
-    examples: [
-      {
-        input: "2 3",
-        expectedOutput: "5",
-        explanation: "The sum of 2 and 3 is 5.",
-      },
-      {
-        input: "-1 5",
-        expectedOutput: "4",
-        explanation: "The sum of -1 and 5 is 4.",
-      },
-    ],
-    constraints: [
-      "The input integers must be between -1000 and 1000.",
-      "The function should return a single integer.",
-    ]
-  };
-  const [testCases, setTestCases] = useState([
-    { input: "2 3", expectedOutput: "5" },
-    { input: "10 20", expectedOutput: "30" },
-    { input: "-5 15", expectedOutput: "10" },
-  ]);
+  const { id } = useParams();
+  const [details, setDetails] = useState(null);
+  const [testCases, setTestCases] = useState([]);
   const [code, setCode] = useState("");
   const [language, setLanguage] = useState("cpp");
   const [processing, setProcessing] = useState(false);
@@ -48,6 +22,17 @@ function Workspace() {
   const [showModal, setShowModal] = useState(false);
   const [jobStarted, setJobStarted] = useState(false);
 
+  useEffect(() => {
+    
+    const question = ques.find((q) => q.id === id);
+
+    if (question) {
+      setDetails(question);
+      setTestCases(question.examples);
+    } else {
+      toast.error("Question not found");
+    }
+  }, [id]);
 
   useEffect(() => {
     socket.on("connect", () => {
@@ -128,6 +113,8 @@ function Workspace() {
   const handleCloseModal = () => {
     setShowModal(false);
   };
+
+  if (!details) return <div>Loading...</div>;
 
   return (
     <div className="workspace">

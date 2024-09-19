@@ -2,10 +2,10 @@ FROM gcc:latest
 
 WORKDIR /app
 
-COPY tle.sh /app/entrypoint.sh
+COPY cppTLE.sh /app/entrypoint.sh
 
 RUN chmod +x /app/entrypoint.sh
 
 ENTRYPOINT ["/app/entrypoint.sh"]
 
-CMD ["sh","-c","g++ code.cpp -o code && ./code < input.txt"]
+CMD ["sh","-c","g++ Main.cpp -o Main && ./Main < input.txt"]

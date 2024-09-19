@@ -38,9 +38,7 @@ const imageSelector = (lang) => {
 };
 
 codeQueue.process(async (job) => {
-
-  io.to(job.data.socketId).emit("job-started", { status: "started"});
-
+  io.to(job.data.socketId).emit("job-started", { status: "started" });
 
   const { code, language, testCases, socketId } = job.data;
 
@@ -63,18 +61,17 @@ codeQueue.process(async (job) => {
 
       fs.writeFileSync(tempInputFile, input);
 
-      const dockerCommand = `docker run --rm --memory=${MEMORY_LIMIT} -v ${tempCodeFile}:/app/code.${language} -v ${tempInputFile}:/app/input.txt ${dockerImage} `;
+      const dockerCommand = `docker run --rm --memory=${MEMORY_LIMIT} -v ${tempCodeFile}:/app/Main.${language} -v ${tempInputFile}:/app/input.txt ${dockerImage} `;
 
-      
       try {
         const { stdout, stderr } = await execPromise(dockerCommand);
-        
-        console.log("stdout",stdout);
+
+        console.log(stdout, stderr);
+
         if (stderr) throw new Error(stderr);
 
         const actualOutput = stdout.trim();
         const passed = actualOutput === expectedOutput.trim();
-
 
         io.to(socketId).emit("test-case-result", {
           testCase: i + 1,
@@ -84,7 +81,11 @@ codeQueue.process(async (job) => {
           passed,
         });
       } catch (error) {
-        let errorMessage = (error.killed || error.code===137) ? "Time Limit Exceeded" : error.stdout;
+        console.log(error);
+        let errorMessage =
+          error.killed || error.code === 137
+            ? "Time Limit Exceeded"
+            : error.stdout;
         if (errorMessage.includes("out of memory"))
           errorMessage = "Memory Limit Exceeded";
         io.to(socketId).emit("test-case-result", {
