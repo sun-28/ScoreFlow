@@ -3,8 +3,6 @@ const codeQueue = require("../util/runQueue");
 const submit = async (req, res) => {
   const { code, language, testCases,socketId } = req.body;
 
-  console.log(1)
-
   if (!code || !language || !testCases) {
     return res.status(400).send({ error: "Missing required fields" });
   }

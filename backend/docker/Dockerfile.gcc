@@ -8,4 +8,4 @@ RUN chmod +x /app/entrypoint.sh
 
 ENTRYPOINT ["/app/entrypoint.sh"]
 
-CMD ["sh","-c","g++ code.cpp -o code && ./code < input.txt","timeout","1"]
+CMD ["sh","-c","g++ code.cpp -o code && ./code < input.txt"]
