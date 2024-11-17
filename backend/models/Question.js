@@ -1,50 +1,58 @@
 const mongoose = require("mongoose");
 const { Schema } = mongoose;
-const AutoIncrement=require('mongoose-sequence')(mongoose)
 
 const questionSchema = new Schema({
-questionId:{
-type:Number,
-unique:true
-},
-   title:{
-    type:String,
-    require:true
-   },
-   statement:{
-    type:String,
-    require:true
-   },
-   outputStatement:{
-    type:String,
-    require:true
-   },
-   inputStatement:{
-    type:String,
-    require:true
-   },
-   example:[new Schema({
-    input:{
-        type:String,
-        require:true
-    },
-    output:{
-        type:String,
-        require:true
-    },
-    explanation:{
-        typee:String
-    }
-   })],
+  title: {
+    type: String,
+    required: true,
+  },
+  problemStatement: {
+    type: String,
+    required: true,
+  },
+  outputStatement: {
+    type: String,
+    required: true,
+  },
+  inputStatement: {
+    type: String,
+    required: true,
+  },
+  sampleTestCases: [
+    new Schema({
+      input: {
+        type: String,
+        required: true,
+      },
+      output: {
+        type: String,
+        required: true,
+      },
+      explanation: {
+        type: String,
+      },
+    }),
+  ],
+  hiddenTestCases: [
+    new Schema({
+      input: {
+        type: String,
+        required: true,
+      },
+      output: {
+        type: String,
+        required: true,
+      },
+    }),
+  ],
+  marks: {
+    type: Number,
+    required: true,
+  },
+  note: {
+    type: String,
+    default: "",
+  },
+});
 
-
-   note:{
-    type:String,
-    default:"",
-   }
-
-/////////////////////////////////////////////////////////// testcases are left
-
-  });
-Question.plugin(AutoIncrement,{inc_field:'questionId'})
-module.exports = mongoose.model("Question",questionSchema);
+module.exports = mongoose.model("Questions", questionSchema);
