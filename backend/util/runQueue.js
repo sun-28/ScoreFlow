@@ -71,6 +71,7 @@ codeQueue.process(async (job) => {
         if (stderr) throw new Error(stderr);
 
         const actualOutput = stdout.trim();
+        
         const passed = actualOutput === expectedOutput.trim();
 
         io.to(socketId).emit("test-case-result", {

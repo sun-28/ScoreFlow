@@ -9,7 +9,11 @@ import ResultModal from "./ResultModal";
 import io from "socket.io-client";
 import axios from "axios";
 import {ques} from "./ques";
-const socket = io("http://localhost:3001");
+
+
+const SOCKET_SERVER_URL = import.meta.env.VITE_SOCKET_SERVER_URL;
+const API_SERVER_URL = import.meta.env.VITE_API_SERVER_URL;
+const socket = io(SOCKET_SERVER_URL);
 
 function Workspace() {
   const { id } = useParams();
@@ -95,7 +99,8 @@ function Workspace() {
     );
 
     try {
-      const response = await axios.post("http://localhost:3000/code/submit", {
+
+      const response = await axios.post(`${API_SERVER_URL}/code/submit`, {
         code,
         language,
         testCases,

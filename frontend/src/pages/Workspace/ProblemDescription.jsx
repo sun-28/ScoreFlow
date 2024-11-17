@@ -13,9 +13,7 @@ function ProblemDescription({ details }) {
         {details.difficulty}
       </div>
       <div className="py-4">
-        <div className="text-xs font-light bg-gray-200 inline-block px-2 py-1 rounded-full">
-          Companies
-        </div>
+        
       </div>
       <div className="text-sm mb-8">{details.description}</div>
       <div className="space-y-4">
