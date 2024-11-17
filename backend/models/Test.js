@@ -1,44 +1,33 @@
 const mongoose = require("mongoose");
-const Question = require("./Question");
-const { Schema } = mongoose;
-const AutoIncrement=require('mongoose-sequence')(mongoose)
 
-const testSchema = new Schema({
-testId:{
-type:Number,
-unique:true
-},
-   title:{
-    type:String,
-    require:true
-   },
-   batch:{
-    type:String,
-    require:true
-   },
-   course:{
-    type:String,
-    require:true
-   },
-   gradYear:{
-    type:Number,
-    require:true
-   },
-   semester:{
-    type:Number,
-    require:true
-   },
-   note:{
-    type:String,
-    default:"",
-   },
-   questions:[{
-   ques:{
-   type:Schema.Types.ObjectId,
-   ref:"Question",
-   require:true,
-   },
-}]
-  });
-Test.plugin(AutoIncrement,{inc_field:'testId'})
-module.exports = mongoose.model("Test", testSchema);
+const submissionEntrySchema = new mongoose.Schema({
+  submissions: [{ type: mongoose.Schema.Types.ObjectId, ref: "Submissions" }],
+  isAccepted: { type: Boolean, default: false },
+});
+
+const testSchema = new mongoose.Schema({
+  subject: { type: String, required: true },
+  startTime: { type: Date, required: true },
+  duration: { type: Number, required: true },
+  numberOfQuestions: { type: Number, required: true },
+  questions: [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "Questions",
+    required: true,
+  }],
+  negativeMarking: { type: Number, default: 0 },
+  allowedLanguages: [{ type: String, required: true }],
+  semester: { type: Number, required: true },
+  batches: [{ type: String, required: true }],
+  createdBy: { type: mongoose.Schema.Types.ObjectId, ref: "Teachers" },
+  submissions: {
+    type: Map,
+    of: {
+      type: Map,
+      of: submissionEntrySchema,
+    },
+    default: {},
+  },
+});
+
+module.exports = mongoose.model("Tests", testSchema);

@@ -8,16 +8,17 @@ connectToMongo();
 
 const app = express();
 
-app.use(cors(
-  {
+app.use(
+  cors({
     origin: "*",
-    credentials: true
-  }
-));
+    credentials: true,
+  })
+);
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use("/code", require("./routes/submission"));
+app.use("/test", require("./routes/test"));
 
 app.get("/", (req, res) => {
   return res.send("Server Healthy!");
