@@ -5,6 +5,8 @@ const util = require("util");
 const path = require("path");
 const socketIo = require("socket.io");
 const crypto = require("crypto");
+const Submission = require("../models/Submission");
+const Test = require("../models/Test");
 
 const execPromise = util.promisify(exec);
 
@@ -40,7 +42,16 @@ const imageSelector = (lang) => {
 codeQueue.process(async (job) => {
   io.to(job.data.socketId).emit("job-started", { status: "started" });
 
-  const { code, language, testCases, socketId } = job.data;
+  const {
+    code,
+    language,
+    testCases,
+    socketId,
+    testId,
+    submissionId,
+    enroll,
+    questionId,
+  } = job.data;
 
   const codeFile = crypto.randomUUID();
   const tempCodeFile = path.join(__dirname, `tempCode/${codeFile}.${language}`);
@@ -48,6 +59,9 @@ codeQueue.process(async (job) => {
   fs.writeFileSync(tempCodeFile, code);
 
   const dockerImage = imageSelector(language);
+
+  let verdict = "accepted";
+  const results = [];
 
   try {
     for (let i = 0; i < testCases.length; i++) {
@@ -61,18 +75,25 @@ codeQueue.process(async (job) => {
 
       fs.writeFileSync(tempInputFile, input);
 
-      const dockerCommand = `docker run --rm --memory=${MEMORY_LIMIT} -v ${tempCodeFile}:/app/Main.${language} -v ${tempInputFile}:/app/input.txt ${dockerImage} `;
+      const dockerCommand = `docker run --rm --memory=${MEMORY_LIMIT} -v ${tempCodeFile}:/app/Main.${language} -v ${tempInputFile}:/app/input.txt ${dockerImage}`;
 
       try {
         const { stdout, stderr } = await execPromise(dockerCommand);
 
-        console.log(stdout, stderr);
-
         if (stderr) throw new Error(stderr);
 
         const actualOutput = stdout.trim();
-        
         const passed = actualOutput === expectedOutput.trim();
+
+        results.push({
+          testCase: i + 1,
+          input,
+          expectedOutput: expectedOutput.trim(),
+          actualOutput,
+          passed,
+        });
+
+        if (!passed) verdict = "failed";
 
         io.to(socketId).emit("test-case-result", {
           testCase: i + 1,
@@ -82,13 +103,23 @@ codeQueue.process(async (job) => {
           passed,
         });
       } catch (error) {
-        console.log(error);
         let errorMessage =
           error.killed || error.code === 137
             ? "Time Limit Exceeded"
             : error.stdout;
         if (errorMessage.includes("out of memory"))
           errorMessage = "Memory Limit Exceeded";
+
+        results.push({
+          testCase: i + 1,
+          input,
+          expectedOutput: expectedOutput.trim(),
+          actualOutput: errorMessage,
+          passed: false,
+        });
+
+        verdict = "failed";
+
         io.to(socketId).emit("test-case-result", {
           testCase: i + 1,
           input,
@@ -100,8 +131,10 @@ codeQueue.process(async (job) => {
         fs.unlinkSync(tempInputFile);
       }
     }
+
     io.to(socketId).emit("job-completed", { status: "completed" });
   } catch (error) {
+    verdict = "error";
     io.to(socketId).emit("job-failed", { error: error.message });
   } finally {
     try {
@@ -110,6 +143,36 @@ codeQueue.process(async (job) => {
       console.error(`Error removing temp code file: ${unlinkError.message}`);
     }
   }
+
+  await Submission.findByIdAndUpdate(submissionId, { verdict, results });
+
+  const test = await Test.findById(testId);
+
+  if (!test.submissions.has(enroll)) {
+    test.submissions.set(enroll, new Map());
+  }
+
+  const studentSubmissions = test.submissions.get(enroll);
+
+  if (!studentSubmissions.has(questionId)) {
+    studentSubmissions.set(questionId, {
+      submissions: [],
+      isAccepted: false,
+    });
+  }
+
+  const questionSubmissions = studentSubmissions.get(questionId);
+
+  questionSubmissions.submissions.push(submissionId);
+
+  if (verdict === "accepted") {
+    questionSubmissions.isAccepted = true;
+  }
+
+  studentSubmissions.set(questionId, questionSubmissions);
+  test.submissions.set(enroll, studentSubmissions);
+
+  await test.save();
 });
 
 codeQueue.on("completed", (job) => {
