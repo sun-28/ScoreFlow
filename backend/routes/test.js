@@ -3,7 +3,7 @@ const { createTest, getTests } = require("../controllers/test");
 
 const router = express.Router();
 
-router.post("/", createTest);
+router.post("/create", createTest);
 router.get("/:semester/:batch", getTests);
 
 module.exports = router;

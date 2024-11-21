@@ -10,11 +10,13 @@ const testSchema = new mongoose.Schema({
   startTime: { type: Date, required: true },
   duration: { type: Number, required: true },
   numberOfQuestions: { type: Number, required: true },
-  questions: [{
-    type: mongoose.Schema.Types.ObjectId,
-    ref: "Questions",
-    required: true,
-  }],
+  questions: [
+    {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Questions",
+      required: true,
+    },
+  ],
   negativeMarking: { type: Number, default: 0 },
   allowedLanguages: [{ type: String, required: true }],
   semester: { type: Number, required: true },
