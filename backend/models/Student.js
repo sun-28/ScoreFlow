@@ -5,22 +5,22 @@ const { Schema } = mongoose;
 const studentSchema = Users.discriminator(
   "Student",
   new Schema({
+    displayName: {
+      type: String,
+      required: true,
+    },
     enroll: {
       type: String,
       required: true,
     },
-    globalRanking: {
+    semester:{
       type: Number,
-      required: true,
+      required: true
     },
-    batchRanking: {
-      type: Number,
-      required: true,
-    },
-    questionSolved: {
-      type: Number,
-      required: true,
-    },
+    batch:{
+      type: String,
+      required : true
+    }
   })
 );
 
