@@ -1,6 +1,7 @@
 const express = require("express");
 const router = express.Router();
 const passport = require("passport");
+const Student = require("../models/Student");
 const GoogleStrategy = require("passport-google-oauth20").Strategy;
 
 passport.use(
@@ -10,7 +11,7 @@ passport.use(
       clientSecret: process.env.GOOGLE_CLIENT_SECRET,
       callbackURL: "/auth/google/callback",
     },
-    (accessToken, refreshToken, profile, done) => {
+    async (accessToken, refreshToken, profile, done) => {
       const email = profile.emails[0].value;
       const domain = email.split("@")[1];
       if (domain !== "mail.jiit.ac.in") {
@@ -19,11 +20,25 @@ passport.use(
 
       let role = "student";
 
-      // check if it is a teacher then change role to teacher
+      let student = await Student.findOne({ enroll: profile.name.familyName });
+      try {
+        if (!student) {
+          student = new Student({
+            displayName: profile.name.givenName,
+            enroll: profile.name.familyName,
+            semester: 5,
+            batch: "F1",
+          });
+          await student.save();
+        }
+        console.log(student);
+        profile.role = role;
 
-      profile.role = role;
-
-      return done(null, profile);
+        return done(null, profile);
+      } catch (error) {
+        console.error("Error saving user:", error);
+        return done(error, null);
+      }
     }
   )
 );
@@ -51,7 +66,7 @@ router.get(
   "/google/callback",
   passport.authenticate("google", { failureRedirect: "/fail" }),
   (req, res) => {
-    console.log(req.user);
+    // console.log(req.user);
     res.redirect("http://localhost:5173/home");
   }
 );
