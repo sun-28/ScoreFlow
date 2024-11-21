@@ -52,7 +52,21 @@ const updateQuestion = async (req, res) => {
   }
 };
 
+const getQuestions = async (req, res) => {
+  try {
+    const questions = await Question.find({}, "_id title");
+
+    if (!questions.length) {
+      return res.status(404).json({ message: "No questions found" });
+    }
+    res.json({ message: "Questions retrieved successfully", questions });
+  } catch (err) {
+    res.status(500).send(err.message);
+  }
+};
+
 module.exports = {
   createQuestion,
   updateQuestion,
+  getQuestions
 };

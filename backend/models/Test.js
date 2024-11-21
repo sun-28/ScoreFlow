@@ -17,7 +17,6 @@ const testSchema = new mongoose.Schema({
       required: true,
     },
   ],
-  negativeMarking: { type: Number, default: 0 },
   allowedLanguages: [{ type: String, required: true }],
   semester: { type: Number, required: true },
   batches: [{ type: String, required: true }],
