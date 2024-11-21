@@ -6,6 +6,7 @@ const path = require("path");
 const socketIo = require("socket.io");
 const crypto = require("crypto");
 const Submission = require("../models/Submission");
+const Question = require("../models/Question");
 const Test = require("../models/Test");
 
 const execPromise = util.promisify(exec);
@@ -46,10 +47,9 @@ codeQueue.process(async (job) => {
     job.data;
 
   const question = await Question.findById(questionId);
+
   const sampleTestCases = question.sampleTestCases;
   const hiddenTestCases = question.hiddenTestCases;
-
-  console.log(sampleTestCases, hiddenTestCases);
 
   const codeFile = crypto.randomUUID();
   const tempCodeFile = path.join(__dirname, `tempCode/${codeFile}.${language}`);
@@ -63,7 +63,7 @@ codeQueue.process(async (job) => {
 
   try {
     for (let i = 0; i < sampleTestCases.length; i++) {
-      const { input, expectedOutput } = sampleTestCases[i];
+      const { input, output } = sampleTestCases[i];
 
       const testFile = crypto.randomUUID();
       const tempInputFile = path.join(
@@ -81,7 +81,7 @@ codeQueue.process(async (job) => {
         if (stderr) throw new Error(stderr);
 
         const actualOutput = stdout.trim();
-        const passed = actualOutput === expectedOutput.trim();
+        const passed = actualOutput === output.trim();
 
         results.push({
           testCase: i + 1,
@@ -127,7 +127,7 @@ codeQueue.process(async (job) => {
     }
 
     for (let i = 0; i < hiddenTestCases.length; i++) {
-      const { input, expectedOutput } = hiddenTestCases[i];
+      const { input, output } = hiddenTestCases[i];
 
       const testFile = crypto.randomUUID();
       const tempInputFile = path.join(
@@ -145,7 +145,7 @@ codeQueue.process(async (job) => {
         if (stderr) throw new Error(stderr);
 
         const actualOutput = stdout.trim();
-        const passed = actualOutput === expectedOutput.trim();
+        const passed = actualOutput === output.trim();
 
         results.push({
           testCase: i + 1,
@@ -188,6 +188,9 @@ codeQueue.process(async (job) => {
     }
   }
 
+  console.log("Verdict:", verdict);
+  console.log("Results:", results);
+
   await Submission.findByIdAndUpdate(submissionId, { verdict, results });
 
   const test = await Test.findById(testId);
@@ -218,7 +221,6 @@ codeQueue.process(async (job) => {
 
   await test.save();
 });
-
 
 codeQueue.on("completed", (job) => {
   console.log(`Job ${job.id} completed`);
