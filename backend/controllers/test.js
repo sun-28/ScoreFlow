@@ -8,7 +8,6 @@ const createTest = async (req, res) => {
     duration,
     numberOfQuestions,
     questions,
-    negativeMarking,
     allowedLanguages,
     semester,
     batches,
@@ -17,6 +16,7 @@ const createTest = async (req, res) => {
 
   try {
     const questionDocuments = await Question.find({ _id: { $in: questions } });
+
     if (questionDocuments.length !== questions.length) {
       return res
         .status(400)
@@ -29,7 +29,6 @@ const createTest = async (req, res) => {
       duration,
       numberOfQuestions,
       questions,
-      negativeMarking,
       allowedLanguages,
       semester,
       batches,
@@ -47,6 +46,7 @@ const getTests = async (req, res) => {
   const { semester, batch } = req.params;
 
   try {
+    const currentTime = new Date();
     const tests = await Test.find({ semester, batches: batch });
 
     if (!tests.length) {
@@ -55,7 +55,10 @@ const getTests = async (req, res) => {
         .json({ message: "No tests found for this semester and batch." });
     }
 
-    res.json(tests);
+    const upcomingTests = tests.filter((test) => test.startTime > currentTime);
+    const pastTests = tests.filter((test) => test.startTime <= currentTime);
+
+    res.json({ upcomingTests, pastTests });
   } catch (err) {
     res.status(500).send(err.message);
   }

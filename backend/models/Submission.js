@@ -5,7 +5,7 @@ const submissionSchema = new Schema({
   who: {
     type: Schema.Types.ObjectId,
     ref: "Student",
-    require: true,
+    // require: true,
   },
   when: {
     type: Date,

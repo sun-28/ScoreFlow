@@ -20,13 +20,13 @@ app.use(express.urlencoded({ extended: true }));
 
 app.use("/code", require("./routes/submission"));
 app.use("/test", require("./routes/test"));
+app.use("/ques", require("./routes/question"));
 
-app.use('/auth', require('./routes/auth'));
+app.use("/auth", require("./routes/auth"));
 
 app.get("/", (req, res) => {
   return res.send("Server Healthy!");
 });
-
 
 app.listen(PORT, () => {
   console.log(`Example app listening on PORT ${PORT}`);
