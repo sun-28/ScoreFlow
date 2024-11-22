@@ -45,6 +45,10 @@ const questionSchema = new Schema({
       },
     }),
   ],
+  numberOfTestCases: {
+    type: Number,
+    required: true,
+  },
   marks: {
     type: Number,
     required: true,

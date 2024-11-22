@@ -3,6 +3,7 @@ const mongoose = require("mongoose");
 const submissionEntrySchema = new mongoose.Schema({
   submissions: [{ type: mongoose.Schema.Types.ObjectId, ref: "Submissions" }],
   isAccepted: { type: Boolean, default: false },
+  numberOfTestCasesPassed: { type: Number, default: 0 },
 });
 
 const testSchema = new mongoose.Schema({
