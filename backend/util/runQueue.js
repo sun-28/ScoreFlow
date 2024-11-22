@@ -188,9 +188,6 @@ codeQueue.process(async (job) => {
     }
   }
 
-  console.log("Verdict:", verdict);
-  console.log("Results:", results);
-
   await Submission.findByIdAndUpdate(submissionId, { verdict, results });
 
   const test = await Test.findById(testId);
@@ -209,7 +206,6 @@ codeQueue.process(async (job) => {
   }
 
   const questionSubmissions = studentSubmissions.get(questionId);
-
   questionSubmissions.submissions.push(submissionId);
 
   if (verdict === "accepted") {
@@ -219,7 +215,10 @@ codeQueue.process(async (job) => {
   studentSubmissions.set(questionId, questionSubmissions);
   test.submissions.set(enroll, studentSubmissions);
 
+  console.log(test.submissions.get(enroll).get(questionId));
+  test.markModified("submissions");
   await test.save();
+
 });
 
 codeQueue.on("completed", (job) => {
