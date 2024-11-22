@@ -1,5 +1,5 @@
 const mongoose = require("mongoose");
-const Users = require("./Users");
+const Users = require("./User");
 const { Schema } = mongoose;
 
 const studentSchema = Users.discriminator(

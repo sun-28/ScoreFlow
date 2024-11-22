@@ -4,8 +4,10 @@ WORKDIR /app
 
 COPY cppTLE.sh /app/entrypoint.sh
 
+RUN apt-get update && apt-get install -y dos2unix && dos2unix /app/entrypoint.sh
+
 RUN chmod +x /app/entrypoint.sh
 
 ENTRYPOINT ["/app/entrypoint.sh"]
 
-CMD ["sh","-c","g++ Main.cpp -o Main && ./Main < input.txt"]
+CMD ["sh", "-c", "g++ Main.cpp -o Main && ./Main < input.txt"]

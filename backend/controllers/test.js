@@ -39,7 +39,7 @@ const createTest = async (req, res) => {
     await test.save();
     res.status(201).json(test);
   } catch (err) {
-    res.status(500).send(err.message);
+    res.status(500).send(err.message).send("bhai body");
   }
 };
 
@@ -57,7 +57,7 @@ const getTests = async (req, res) => {
 
     res.json(tests);
   } catch (err) {
-    res.status(500).send(err.message);
+    res.status(500).send(err.message).send("first try");
   }
 };
 
