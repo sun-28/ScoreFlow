@@ -8,11 +8,12 @@ import TestCases from "./TestCases";
 import ResultModal from "./ResultModal";
 import io from "socket.io-client";
 import axios from "axios";
-import {ques} from "./ques";
+import { ques } from "./ques";
 
-
-const SOCKET_SERVER_URL = import.meta.env.VITE_SOCKET_SERVER_URL;
-const API_SERVER_URL = import.meta.env.VITE_API_SERVER_URL;
+const SOCKET_SERVER_URL = "http://localhost:3001";
+// const SOCKET_SERVER_URL = import.meta.env.VITE_SOCKET_SERVER_URL;
+// const API_SERVER_URL = import.meta.env.VITE_API_SERVER_URL;
+const API_SERVER_URL = "http://localhost:3000";
 const socket = io(SOCKET_SERVER_URL);
 
 function Workspace() {
@@ -27,7 +28,6 @@ function Workspace() {
   const [jobStarted, setJobStarted] = useState(false);
 
   useEffect(() => {
-    
     const question = ques.find((q) => q.id === id);
 
     if (question) {
@@ -99,7 +99,6 @@ function Workspace() {
     );
 
     try {
-
       const response = await axios.post(`${API_SERVER_URL}/code/submit`, {
         code,
         language,
