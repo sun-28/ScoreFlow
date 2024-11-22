@@ -8,6 +8,7 @@ const createTest = async (req, res) => {
     duration,
     numberOfQuestions,
     questions,
+    negativeMarking,
     allowedLanguages,
     semester,
     batches,
@@ -29,6 +30,7 @@ const createTest = async (req, res) => {
       duration,
       numberOfQuestions,
       questions,
+      negativeMarking,
       allowedLanguages,
       semester,
       batches,
@@ -38,7 +40,7 @@ const createTest = async (req, res) => {
     await test.save();
     res.status(201).json(test);
   } catch (err) {
-    res.status(500).send(err.message).send("bhai body");
+    res.status(500).send(err.message);
   }
 };
 
@@ -60,7 +62,7 @@ const getTests = async (req, res) => {
 
     res.json({ upcomingTests, pastTests });
   } catch (err) {
-    res.status(500).send(err.message).send("first try");
+    res.status(500).send(err.message);
   }
 };
 

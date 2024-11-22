@@ -219,6 +219,14 @@ codeQueue.process(async (job) => {
   studentSubmissions.set(questionId, questionSubmissions);
   test.submissions.set(enroll, studentSubmissions);
 
+
+  // if accepted and this is currently a test then please do save this in the a new db with code file with testid,qid,code , enroll
+  // do not delete the files please 
+  // after test is over start a chrone job with request with the test id. :)
+
+  // delete after the job is done using test id the test records and also unlinksync the file with the names 
+
+
   await test.save();
 });
 
