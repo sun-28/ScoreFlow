@@ -2,6 +2,7 @@ const express = require("express");
 const router = express.Router();
 const passport = require("passport");
 const Student = require("../models/Student");
+const Teacher = require("../models/Teacher");
 const GoogleStrategy = require("passport-google-oauth20").Strategy;
 
 passport.use(
@@ -17,11 +18,19 @@ passport.use(
       if (domain !== "mail.jiit.ac.in") {
         return done(null, false, { message: "Unauthorized domain" });
       }
-
-      let role = "student";
-
-      let student = await Student.findOne({ enroll: profile.name.familyName });
+      console.log(profile);
+      let role;
       try {
+        const teacher = await Teacher.findOne({ email });
+        if (teacher) {
+          role = "teacher";
+          profile.role = role;
+          console.log("Teacher");
+          return done(null, profile);
+        }
+        let student = await Student.findOne({
+          enroll: profile.name.familyName,
+        });
         if (!student) {
           student = new Student({
             displayName: profile.name.givenName,
@@ -31,9 +40,9 @@ passport.use(
           });
           await student.save();
         }
-        console.log(student);
+        role = "student";
         profile.role = role;
-
+        console.log("Student");
         return done(null, profile);
       } catch (error) {
         console.error("Error saving user:", error);
@@ -66,10 +75,16 @@ router.get(
   "/google/callback",
   passport.authenticate("google", { failureRedirect: "/fail" }),
   (req, res) => {
-    // console.log(req.user);
     res.redirect("http://localhost:5173/home");
   }
 );
+
+router.get("/user", (req, res) => {
+  if (req.isAuthenticated()) {
+    return res.json(req.user);
+  }
+  res.status(401).json({ message: "Unauthorized" });
+});
 
 router.get("/logout", (req, res) => {
   req.logout(() => {
