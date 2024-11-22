@@ -13,6 +13,9 @@ const createQuestion = async (req, res) => {
   } = req.body;
 
   try {
+
+    const numberOfTestCases = sampleTestCases.length + hiddenTestCases.length;
+
     const question = new Question({
       title,
       problemStatement,
@@ -20,6 +23,7 @@ const createQuestion = async (req, res) => {
       inputStatement,
       sampleTestCases,
       hiddenTestCases,
+      numberOfTestCases,
       marks,
       note,
     });

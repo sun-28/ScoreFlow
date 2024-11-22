@@ -13,16 +13,16 @@ import AddTest from "./components/AddTest";
 const App = () => {
   return (
     <>
-    <ToastContainer />
-    <Navbar />
+      <ToastContainer />
+      <Navbar />
       {/* <CodeEditor /> */}
       <div className="main">
         <Routes>
           <Route exact path="/home" element={<Home />} />
-          <Route exact path="/problem/:id" element={<Workspace/>} />
-          <Route exact path="/auth" element={<GLogin/>} />
-          <Route exact path="/add/Ques" element={<AddQues/>} />
-          <Route exact path="/add/Test" element={<AddTest/>} />
+          <Route exact path="/problem/:id" element={<Workspace />} />
+          <Route exact path="/auth" element={<GLogin />} />
+          <Route exact path="/add/Ques" element={<AddQues />} />
+          <Route exact path="/add/Test" element={<AddTest />} />
         </Routes>
       </div>
     </>
