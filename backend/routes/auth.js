@@ -24,7 +24,7 @@ passport.use(
         if (teacher) {
           role = "teacher";
           profile.role = role;
-          profile._id = teacher._id
+          profile._id = teacher._id;
           return done(null, profile);
         }
         let student = await Student.findOne({
@@ -53,7 +53,6 @@ passport.use(
 passport.serializeUser((user, done) => done(null, user));
 passport.deserializeUser((user, done) => done(null, user));
 
-
 router.get(
   "/google",
   passport.authenticate("google", { scope: ["profile", "email"] })
@@ -62,7 +61,7 @@ router.get(
 router.get(
   "/google/callback",
   passport.authenticate("google", {
-    successRedirect: process.env.FRONTEND_URL,
+    successRedirect: process.env.FRONTEND_URL + "/tests",
     failureRedirect: "/fail",
   })
 );
@@ -74,9 +73,15 @@ router.get("/user", (req, res) => {
   res.status(401).json({ message: "Unauthorized" });
 });
 
-router.get("/logout", (req, res) => {
-  req.logout(() => {
-    res.redirect("/");
+router.get("/logout", (req, res, next) => {
+  req.logout((err) => {
+    if (err) return next(err);
+    if (req.session) {
+      req.session.destroy((err) => {
+        if (err) return next(err);
+        res.clearCookie("connect.sid");
+      });
+    }
   });
 });
 

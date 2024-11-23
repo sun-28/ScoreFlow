@@ -4,7 +4,6 @@ import Editor from "@monaco-editor/react";
 const CodeEditor = ({ onChange, language, onLanguageChange }) => {
   const [value, setValue] = useState("");
 
-  // Default code snippets for each language
   const defaultCode = {
     javascript: `// JavaScript Code Here\n\n// Write your code here`,
     cpp: `// C++ Code Here\n#include <iostream>\nusing namespace std;\n\nint main() {\n  // Write your code here\n  return 0;\n}`,
@@ -13,7 +12,6 @@ const CodeEditor = ({ onChange, language, onLanguageChange }) => {
   };
 
   useEffect(() => {
-    // Set the editor's value based on the selected language
     setValue(defaultCode[language] || "");
   }, [language]);
 
