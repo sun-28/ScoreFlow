@@ -4,15 +4,21 @@ const cors = require("cors");
 const dotenv = require("dotenv");
 const session = require("express-session");
 const passport = require("passport");
+const RedisStore = require("connect-redis").default;
+const redis = require("ioredis");
 const PORT = process.env.API_PORT;
 dotenv.config();
 connectToMongo();
 
 const app = express();
+const redisClient = new redis({
+  host: "127.0.0.1",
+  port: 6379,
+});
 
 app.use(
   cors({
-    origin: "*",
+    origin: process.env.FRONTEND_URL,
     credentials: true,
   })
 );
@@ -22,7 +28,8 @@ app.use(
     secret: "scoreflow_secret",
     resave: false,
     saveUninitialized: false,
-    cookie: { secure: false }, 
+    cookie: { secure: false },
+    store: new RedisStore({ client: redisClient }),
   })
 );
 
