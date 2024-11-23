@@ -75,7 +75,6 @@ codeQueue.process(async (job) => {
   const dockerImage = imageSelector(language);
 
   let verdict = "accepted";
-  const results = [];
   const numberOfTestCasesPassed = 0;
 
   try {
@@ -109,8 +108,6 @@ codeQueue.process(async (job) => {
           verdict: passed ? "Accepted" : "Wrong Answer",
         };
 
-        results.push(testCaseResult);
-
         if (!passed) verdict = "failed";
 
         io.to(socketId).emit("sample-testcase-result", testCaseResult);
@@ -122,8 +119,6 @@ codeQueue.process(async (job) => {
           passed: false,
           verdict: errorMessage,
         };
-
-        results.push(testCaseResult);
 
         verdict = "failed";
 
@@ -161,8 +156,6 @@ codeQueue.process(async (job) => {
           verdict: passed ? "Accepted" : "Wrong Answer",
         };
 
-        results.push(testCaseResult);
-
         io.to(socketId).emit("hidden-testcase-result", testCaseResult);
 
         if (!passed) verdict = "failed";
@@ -174,8 +167,6 @@ codeQueue.process(async (job) => {
           passed: false,
           verdict: errorMessage,
         };
-
-        results.push(testCaseResult);
 
         io.to(socketId).emit("hidden-testcase-result", testCaseResult);
 
@@ -196,11 +187,7 @@ codeQueue.process(async (job) => {
     }
   }
 
-  await Submission.findByIdAndUpdate(submissionId, {
-    verdict,
-    results,
-    numberOfTestCasesPassed,
-  });
+  await Submission.findByIdAndUpdate(submissionId, { verdict });
 
   const test = await Test.findById(testId);
 

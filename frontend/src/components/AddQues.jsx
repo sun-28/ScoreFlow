@@ -1,6 +1,6 @@
-import axios from "axios";
 import React, { useState } from "react";
 import { toast } from "react-toastify";
+import axiosInstance from "../util/axiosInstance";
 
 const AddQues = () => {
   const [formData, setFormData] = useState({
@@ -36,10 +36,7 @@ const AddQues = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const response = await axios.post(
-        "http://localhost:3000/ques/create",
-        formData
-      );
+      const response = await axiosInstance.post("/ques/create", formData);
       console.log("Question added:", response.data);
       toast.success("Question added successfully!");
       // Optionally reset form
