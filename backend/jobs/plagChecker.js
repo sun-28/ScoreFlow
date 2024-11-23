@@ -53,7 +53,7 @@ agenda.define("check plagiarism for test", async (job) => {
   };
 
   try {
-    const testRecords = await TestModel.find({ testId });
+    const testRecords = await PlagModel.find({ testId });
     const language = "";
    
     const groupedByQuestion = testRecords.reduce((acc, record) => {
@@ -108,6 +108,9 @@ agenda.define("check plagiarism for test", async (job) => {
         }
       }
     }
+
+
+    // delete all the code files if all the records have been checked 
   } catch (error) {
     console.error("Error during plagiarism check:", error);
   }
