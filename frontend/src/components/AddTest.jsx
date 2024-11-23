@@ -8,9 +8,9 @@ const AddTest = () => {
     startTime: "",
     duration: "",
     questions: [],
-    allowedLanguages: "",
+    allowedLanguages: [],
     semester: "",
-    batches: "",
+    batches: [],
     numberOfQuestions: 0,
   });
   const [questions, setQuestions] = useState([]);
@@ -36,6 +36,26 @@ const AddTest = () => {
     setFormData({ ...formData, [name]: value });
   };
 
+  const handleCheckboxChange = (e) => {
+    const { name, value, checked } = e.target;
+    setFormData((prevState) => ({
+      ...prevState,
+      [name]: checked
+        ? [...prevState[name], value]
+        : prevState[name].filter((item) => item !== value),
+    }));
+  };
+
+  const handleLangUpdate = (e) => {
+    const { name, value, checked } = e.target;
+    setFormData((prevState) => ({
+      ...prevState,
+      [name]: checked
+        ? [...prevState[name], value]
+        : prevState[name].filter((item) => item !== value),
+    }));
+  };
+
   const handleQuestionSelection = (e) => {
     const selectedOptions = Array.from(
       e.target.selectedOptions,
@@ -55,9 +75,9 @@ const AddTest = () => {
         startTime: "",
         duration: "",
         questions: [],
-        allowedLanguages: "",
+        allowedLanguages: [],
         semester: "",
-        batches: "",
+        batches: [],
       });
     } catch (error) {
       console.error("Error adding test:", error);
@@ -111,51 +131,72 @@ const AddTest = () => {
           />
         </div>
         <div>
-          <label
-            htmlFor="allowedLanguages"
-            className="block text-sm font-medium"
-          >
-            Allowed Languages
-          </label>
-          <input
-            type="text"
-            id="allowedLanguages"
-            name="allowedLanguages"
-            value={formData.allowedLanguages}
-            onChange={handleInputChange}
-            className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
-            placeholder="e.g., Python, Java, C++"
-            required
-          />
+          <label className="block text-sm font-medium">Allowed Languages</label>
+          <div className="mt-2 space-y-1 flex flex-row items-center gap-2">
+            {[
+              { display: "C", value: "c" },
+              { display: "C++", value: "cpp" },
+              { display: "Java", value: "java" },
+              { display: "Python", value: "python" },
+            ].map((lang) => (
+              <div key={lang.value} className="flex items-center">
+                <input
+                  type="checkbox"
+                  id={lang.value}
+                  name="allowedLanguages"
+                  value={lang.value}
+                  checked={formData.allowedLanguages.includes(lang.value)}
+                  onChange={handleLangUpdate}
+                  className="mr-2"
+                />
+                <label htmlFor={lang.value} className="text-sm">
+                  {lang.display}
+                </label>
+              </div>
+            ))}
+          </div>
         </div>
         <div>
           <label htmlFor="semester" className="block text-sm font-medium">
             Semester
           </label>
-          <input
-            type="number"
+          <select
             id="semester"
             name="semester"
             value={formData.semester}
             onChange={handleInputChange}
             className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
             required
-          />
+          >
+            <option value="">Select Semester</option>
+            {Array.from({ length: 8 }, (_, i) => (
+              <option key={i + 1} value={i + 1}>
+                {i + 1}
+              </option>
+            ))}
+          </select>
         </div>
         <div>
-          <label htmlFor="batches" className="block text-sm font-medium">
-            Batches
-          </label>
-          <input
-            type="text"
-            id="batches"
-            name="batches"
-            value={formData.batches}
-            onChange={handleInputChange}
-            className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
-            placeholder="e.g., A, B, C"
-            required
-          />
+          <label className="block text-sm font-medium">Batches</label>
+          <div className="mt-2 space-y-1 flex items-center gap-2">
+            {["F1", "F2", "F3", "F4", "F5", "F6", "F7", "F8"].map((batch) => (
+              <div key={batch} className="flex items-center">
+                <input
+                  type="checkbox"
+                  id={batch}
+                  name="batches"
+                  value={batch}
+                  checked={formData.batches.includes(batch)}
+                  onChange={handleCheckboxChange}
+                  className="mr-2"
+                />
+
+                <label htmlFor={batch} className="text-sm">
+                  {batch}
+                </label>
+              </div>
+            ))}
+          </div>
         </div>
         <div>
           <label htmlFor="questions" className="block text-sm font-medium">
