@@ -11,6 +11,7 @@ import UserState from "./context/user/UserState";
 import Auth from "./pages/Auth";
 import ProtectedRoute from "./components/ProtectedRoute";
 import SideBar from "./components/SideBar";
+import TestPage from "./pages/TestPage";
 
 const App = () => {
   const location = useLocation();
@@ -49,6 +50,11 @@ const App = () => {
               element={
                 <ProtectedRoute element={<Tests semester={5} batch="F1" />} />
               }
+            />
+            <Route
+              exact
+              path="/test/:testid"
+              element={<ProtectedRoute element={<TestPage />} />}
             />
           </Routes>
         </div>
