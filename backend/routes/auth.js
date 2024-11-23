@@ -63,9 +63,6 @@ router.use(
   })
 );
 
-router.use(passport.initialize());
-router.use(passport.session());
-
 router.get(
   "/google",
   passport.authenticate("google", { scope: ["profile", "email"] })
