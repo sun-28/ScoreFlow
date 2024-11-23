@@ -8,12 +8,12 @@ const createTest = async (req, res) => {
     duration,
     numberOfQuestions,
     questions,
-    negativeMarking,
     allowedLanguages,
     semester,
     batches,
-    createdBy,
   } = req.body;
+
+  const createdBy = req.user._id;
 
   try {
     const questionDocuments = await Question.find({ _id: { $in: questions } });
@@ -30,7 +30,6 @@ const createTest = async (req, res) => {
       duration,
       numberOfQuestions,
       questions,
-      negativeMarking,
       allowedLanguages,
       semester,
       batches,

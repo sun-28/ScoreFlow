@@ -21,7 +21,6 @@ app.use(express.urlencoded({ extended: true }));
 app.use("/code", require("./routes/submission"));
 app.use("/test", require("./routes/test"));
 app.use("/ques", require("./routes/question"));
-
 app.use("/auth", require("./routes/auth"));
 
 app.get("/", (req, res) => {

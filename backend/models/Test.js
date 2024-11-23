@@ -30,7 +30,11 @@ const testSchema = new mongoose.Schema({
   allowedLanguages: [{ type: String, required: true }],
   semester: { type: Number, required: true },
   batches: [{ type: String, required: true }],
-  createdBy: { type: mongoose.Schema.Types.ObjectId, ref: "Teachers" },
+  createdBy: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "Teachers",
+    required: true,
+  },
   submissions: {
     type: Map,
     of: {
