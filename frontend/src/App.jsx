@@ -9,10 +9,11 @@ import GLogin from "./components/GLogin";
 import AddQues from "./components/AddQues";
 import AddTest from "./components/AddTest";
 import Tests from "./pages/Tests";
+import UserState from "./context/user/UserState";
 
 const App = () => {
   return (
-    <>
+    <UserState>
       <ToastContainer />
       <Navbar />
       <div className="main">
@@ -25,7 +26,7 @@ const App = () => {
           <Route exact path="/tests" element={<Tests semester={5} batch="F1"/>} />
         </Routes>
       </div>
-    </>
+    </UserState>
   );
 };
 

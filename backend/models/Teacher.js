@@ -12,4 +12,4 @@ const teahcerSchema = new Schema({
   },
 });
 
-module.exports = mongoose.model("Teacher", teahcerSchema);
+module.exports = mongoose.model("Teachers", teahcerSchema);

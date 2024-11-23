@@ -1,26 +1,39 @@
-import React, { useEffect, useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import { toast } from "react-toastify";
 import axiosInstance from "../util/axiosInstance";
+import userContext from "../context/user/userContext";
 
 const Tests = ({ semester, batch }) => {
   const [upcomingTests, setUpcomingTests] = useState([]);
   const [pastTests, setPastTests] = useState([]);
-  const [activeTab, setActiveTab] = useState("upcoming"); // default tab
+  const [activeTab, setActiveTab] = useState("upcoming");
+  const context = useContext(userContext);
+
+  const { currUser, getUser } = context;
 
   useEffect(() => {
+    if(!currUser) getUser();
     const fetchTests = async () => {
       try {
         const response = await axiosInstance.get(`/test/${semester}/${batch}`);
         setUpcomingTests(response.data.upcomingTests);
         setPastTests(response.data.pastTests);
+        console.log(response.data.pastTests);
       } catch (error) {
         console.error("Error fetching tests:", error);
-        toast.error(error);
+        toast.error("Failed to load tests.");
       }
     };
 
     fetchTests();
-  }, [semester, batch]);
+  }, [semester, batch, getUser]);
+
+  const isTestActive = (startTime, duration) => {
+    const currentTime = new Date();
+    const endTime = new Date(startTime);
+    endTime.setMinutes(endTime.getMinutes() + duration);
+    return currentTime >= new Date(startTime) && currentTime <= endTime;
+  };
 
   return (
     <div className="p-6 bg-gray-50 rounded shadow-md">
@@ -54,7 +67,12 @@ const Tests = ({ semester, batch }) => {
 
       {/* Tab Content */}
       {activeTab === "upcoming" && (
-        <TestList tests={upcomingTests} label="No upcoming tests." />
+        <TestList
+          tests={upcomingTests}
+          label="No upcoming tests."
+          currUser={currUser}
+          isTestActive={isTestActive}
+        />
       )}
       {activeTab === "past" && (
         <TestList tests={pastTests} label="No past tests." />
@@ -63,7 +81,7 @@ const Tests = ({ semester, batch }) => {
   );
 };
 
-const TestList = ({ tests, label }) => {
+const TestList = ({ tests, label, currUser, isTestActive }) => {
   if (!tests.length) {
     return <p className="text-gray-500">{label}</p>;
   }
@@ -89,8 +107,25 @@ const TestList = ({ tests, label }) => {
             <strong>Questions:</strong> {test.numberOfQuestions}
           </p>
           <p className="text-sm text-gray-600">
-            <strong>Created By:</strong> {test.createdBy?.name || "Unknown"}
+            <strong>Created By:</strong> {test.createdBy.displayName}
           </p>
+
+          {/* Conditional Buttons */}
+          <div className="mt-4">
+            {currUser?.role === "student" &&
+              isTestActive(test.startTime, test.duration) && (
+                <button className="py-2 px-4 bg-blue-500 text-white rounded hover:bg-blue-600">
+                  Start
+                </button>
+              )}
+
+            {currUser?.role === "teacher" &&
+              test.createdBy._id === currUser._id && (
+                <button className="py-2 px-4 bg-yellow-500 text-white rounded hover:bg-yellow-600 ml-2">
+                  Edit
+                </button>
+              )}
+          </div>
         </div>
       ))}
     </div>
