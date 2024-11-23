@@ -44,7 +44,6 @@ const createTest = async (req, res) => {
 
 const getTests = async (req, res) => {
   const { semester, batch } = req.params;
-
   try {
     const currentTime = new Date();
     const tests = await Test.find({ semester, batches: batch }).populate({
@@ -76,7 +75,31 @@ const getTests = async (req, res) => {
   }
 };
 
+const getTestById = async (req, res) => {
+  const { testid } = req.params;
+  try {
+    const test = await Test.findById(testid).populate({ path: "questions" });
+    if (!test) {
+      return res.status(404).json({ message: "Test not found" });
+    }
+    if (test.startTime > new Date()) {
+      return res.status(400).json({ message: "Test has not started yet" });
+    }
+    const endTime = new Date(test.startTime);
+    endTime.setMinutes(endTime.getMinutes() + test.duration);
+
+    if (endTime < new Date()) {
+      return res.status(400).json({ message: "Test has ended" });
+    }
+
+    res.json(test);
+  } catch (err) {
+    res.status(500).send(err.message);
+  }
+};
+
 module.exports = {
   createTest,
   getTests,
+  getTestById,
 };
