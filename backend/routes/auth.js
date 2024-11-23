@@ -75,7 +75,7 @@ router.get(
   "/google/callback",
   passport.authenticate("google", { failureRedirect: "/fail" }),
   (req, res) => {
-    res.redirect("http://localhost:5173/home");
+    res.redirect(process.env.FRONTEND_URL);
   }
 );
 

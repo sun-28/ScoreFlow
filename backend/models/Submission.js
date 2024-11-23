@@ -5,7 +5,7 @@ const submissionSchema = new Schema({
   who: {
     type: Schema.Types.ObjectId,
     ref: "Student",
-    // require: true,
+    require: true,
   },
   when: {
     type: Date,
@@ -23,9 +23,21 @@ const submissionSchema = new Schema({
     type: String,
     require: true,
   },
-  numberOfTestCasesPassed: {
-    type: Number,
-    default: 0,
-  },
+  results: [
+    new Schema({
+      testCase: {
+        type: Number,
+        required: true,
+      },
+      passed:{
+        type: Boolean,
+        required: true,
+      },
+      verdict: {
+        type: String,
+        required: true,
+      },
+    }),
+  ],
 });
 module.exports = mongoose.model("Submissions", submissionSchema);

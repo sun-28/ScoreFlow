@@ -40,6 +40,22 @@ const imageSelector = (lang) => {
   }
 };
 
+const findError = (stderr) => {
+  if (stderr.killed || stderr.code === 137) return "Time Limit Exceeded";
+  const err = stderr.stdout || stderr.message;
+  if (err.includes("out of memory")) return "Memory Limit Exceeded";
+  if (err.includes("Compilation error") || err.includes("error:"))
+    return "Compilation Error";
+  if (err.includes("Segmentation fault"))
+    return "Runtime Error: Segmentation fault";
+  if (
+    err.includes("Index out of bounds") ||
+    err.includes("ArrayIndexOutOfBoundsException")
+  )
+    return "Runtime Error: Out of Bounds";
+  return "Runtime Error";
+};
+
 codeQueue.process(async (job) => {
   io.to(job.data.socketId).emit("job-started", { status: "started" });
 
@@ -84,44 +100,34 @@ codeQueue.process(async (job) => {
         const actualOutput = stdout.trim();
         const passed = actualOutput === output.trim();
         passed && numberOfTestCasesPassed++;
-        results.push({
+
+        const testCaseResult = {
           testCase: i + 1,
           passed,
-          verdict: passed ? "accepted" : "wrong answer",
-        });
+          expectedOutput: output,
+          actualOutput,
+          verdict: passed ? "Accepted" : "Wrong Answer",
+        };
+
+        results.push(testCaseResult);
 
         if (!passed) verdict = "failed";
 
-        io.to(socketId).emit("test-case-result", {
-          testCase: i + 1,
-          passed,
-          verdict: passed ? "accepted" : "wrong answer",
-        });
+        io.to(socketId).emit("sample-testcase-result", testCaseResult);
       } catch (error) {
-        let errorMessage =
-          error.killed || error.code === 137
-            ? "Time Limit Exceeded"
-            : error.stdout;
-        if (errorMessage.includes("out of memory"))
-          errorMessage = "Memory Limit Exceeded";
+        errorMessage = findError(error);
 
-        results.push({
+        const testCaseResult = {
           testCase: i + 1,
           passed: false,
-          verdict: errorMessage.includes("Memory Limit Exceeded")
-            ? "memory limit exceeded"
-            : "compilation error",
-        });
+          verdict: errorMessage,
+        };
+
+        results.push(testCaseResult);
 
         verdict = "failed";
 
-        io.to(socketId).emit("test-case-result", {
-          testCase: i + 1,
-          passed: false,
-          verdict: errorMessage.includes("Memory Limit Exceeded")
-            ? "memory limit exceeded"
-            : "compilation error",
-        });
+        io.to(socketId).emit("sample-testcase-result", testCaseResult);
       } finally {
         fs.unlinkSync(tempInputFile);
       }
@@ -148,28 +154,30 @@ codeQueue.process(async (job) => {
         const actualOutput = stdout.trim();
         const passed = actualOutput === output.trim();
         passed && numberOfTestCasesPassed++;
-        results.push({
+
+        const testCaseResult = {
           testCase: i + 1,
           passed,
-          verdict: passed ? "accepted" : "wrong answer",
-        });
+          verdict: passed ? "Accepted" : "Wrong Answer",
+        };
+
+        results.push(testCaseResult);
+
+        io.to(socketId).emit("hidden-testcase-result", testCaseResult);
 
         if (!passed) verdict = "failed";
       } catch (error) {
-        let errorMessage =
-          error.killed || error.code === 137
-            ? "Time Limit Exceeded"
-            : error.stdout;
-        if (errorMessage.includes("out of memory"))
-          errorMessage = "Memory Limit Exceeded";
+        errorMessage = findError(error);
 
-        results.push({
+        const testCaseResult = {
           testCase: i + 1,
           passed: false,
-          verdict: errorMessage.includes("Memory Limit Exceeded")
-            ? "memory limit exceeded"
-            : "compilation error",
-        });
+          verdict: errorMessage,
+        };
+
+        results.push(testCaseResult);
+
+        io.to(socketId).emit("hidden-testcase-result", testCaseResult);
 
         verdict = "failed";
       } finally {
@@ -224,12 +232,11 @@ codeQueue.process(async (job) => {
   studentSubmissions.set(questionId, questionSubmissions);
   test.submissions.set(enroll, studentSubmissions);
 
-
   // if accepted and this is currently a test then please do save this in the a new db with code file with testid,qid,code , enroll
-  // do not delete the files please 
+  // do not delete the files please
   // after test is over start a chrone job with request with the test id. :)
 
-  // delete after the job is done using test id the test records and also unlinksync the file with the names 
+  // delete after the job is done using test id the test records and also unlinksync the file with the names
 
   console.log(test.submissions.get(enroll).get(questionId));
   test.markModified("submissions");
