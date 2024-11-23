@@ -49,18 +49,31 @@ const getTests = async (req, res) => {
 
   try {
     const currentTime = new Date();
-    const tests = await Test.find({ semester, batches: batch });
+    const tests = await Test.find({ semester, batches: batch }).populate({
+      path: "createdBy",
+      select: "displayName",
+    });
     if (!tests.length) {
       return res
         .status(404)
         .json({ message: "No tests found for this semester and batch." });
     }
 
-    const upcomingTests = tests.filter((test) => test.startTime > currentTime);
-    const pastTests = tests.filter((test) => test.startTime <= currentTime);
+    const upcomingTests = tests.filter((test) => {
+      const endTime = new Date(test.startTime);
+      endTime.setMinutes(endTime.getMinutes() + test.duration);
+      return endTime > currentTime;
+    });
+
+    const pastTests = tests.filter((test) => {
+      const endTime = new Date(test.startTime);
+      endTime.setMinutes(endTime.getMinutes() + test.duration);
+      return endTime <= currentTime;
+    });
 
     res.json({ upcomingTests, pastTests });
   } catch (err) {
+    console.log(err);
     res.status(500).send(err.message);
   }
 };
