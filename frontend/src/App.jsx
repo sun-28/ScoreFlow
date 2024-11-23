@@ -1,5 +1,4 @@
 import React from "react";
-// import CodeEditor from "./components/CodeEditor";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import Workspace from "./pages/Workspace/Workspace";
@@ -9,13 +8,13 @@ import Navbar from "./components/Navbar";
 import GLogin from "./components/GLogin";
 import AddQues from "./components/AddQues";
 import AddTest from "./components/AddTest";
+import Tests from "./pages/Tests";
 
 const App = () => {
   return (
     <>
       <ToastContainer />
       <Navbar />
-      {/* <CodeEditor /> */}
       <div className="main">
         <Routes>
           <Route exact path="/home" element={<Home />} />
@@ -23,6 +22,7 @@ const App = () => {
           <Route exact path="/auth" element={<GLogin />} />
           <Route exact path="/add/Ques" element={<AddQues />} />
           <Route exact path="/add/Test" element={<AddTest />} />
+          <Route exact path="/tests" element={<Tests semester={5} batch="F1"/>} />
         </Routes>
       </div>
     </>

@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
-import axios from "axios";
+import axiosInstance from "../util/axiosInstance";
+import { toast } from "react-toastify";
 
 const AddTest = () => {
   const [formData, setFormData] = useState({
@@ -12,14 +13,13 @@ const AddTest = () => {
     batches: "",
     numberOfQuestions: 0,
   });
-
   const [questions, setQuestions] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchQuestions = async () => {
       try {
-        const response = await axios.get("http://localhost:3000/ques/get");
+        const response = await axiosInstance.get("/ques/get");
         setQuestions(response.data.questions);
       } catch (error) {
         console.error("Error fetching questions:", error);
@@ -48,7 +48,7 @@ const AddTest = () => {
     e.preventDefault();
     setFormData({ ...formData, numberOfQuestions: formData.questions.length });
     try {
-      await axios.post("http://localhost:3000/test/create", formData);
+      await axiosInstance.post("/test/create", formData);
       toast.success("Test added successfully!");
       setFormData({
         subject: "",

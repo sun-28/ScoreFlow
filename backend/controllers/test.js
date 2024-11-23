@@ -14,6 +14,7 @@ const createTest = async (req, res) => {
   } = req.body;
 
   const createdBy = req.user._id;
+  console.log(createdBy);
 
   try {
     const questionDocuments = await Question.find({ _id: { $in: questions } });
@@ -49,7 +50,6 @@ const getTests = async (req, res) => {
   try {
     const currentTime = new Date();
     const tests = await Test.find({ semester, batches: batch });
-
     if (!tests.length) {
       return res
         .status(404)

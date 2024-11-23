@@ -18,14 +18,13 @@ passport.use(
       if (domain !== "mail.jiit.ac.in") {
         return done(null, false, { message: "Unauthorized domain" });
       }
-      console.log(profile);
       let role;
       try {
         const teacher = await Teacher.findOne({ email });
         if (teacher) {
           role = "teacher";
           profile.role = role;
-          console.log("Teacher");
+          profile._id = teacher._id
           return done(null, profile);
         }
         let student = await Student.findOne({
@@ -42,7 +41,6 @@ passport.use(
         }
         role = "student";
         profile.role = role;
-        console.log("Student");
         return done(null, profile);
       } catch (error) {
         console.error("Error saving user:", error);
@@ -55,13 +53,6 @@ passport.use(
 passport.serializeUser((user, done) => done(null, user));
 passport.deserializeUser((user, done) => done(null, user));
 
-router.use(
-  require("express-session")({
-    secret: "scoreflow_secret",
-    resave: false,
-    saveUninitialized: true,
-  })
-);
 
 router.get(
   "/google",
@@ -70,10 +61,10 @@ router.get(
 
 router.get(
   "/google/callback",
-  passport.authenticate("google", { failureRedirect: "/fail" }),
-  (req, res) => {
-    res.redirect(process.env.FRONTEND_URL);
-  }
+  passport.authenticate("google", {
+    successRedirect: process.env.FRONTEND_URL,
+    failureRedirect: "/fail",
+  })
 );
 
 router.get("/user", (req, res) => {
