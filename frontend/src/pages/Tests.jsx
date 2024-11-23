@@ -9,16 +9,14 @@ const Tests = ({ semester, batch }) => {
   const [activeTab, setActiveTab] = useState("upcoming");
   const context = useContext(userContext);
 
-  const { currUser, getUser } = context;
+  const { currUser } = context;
 
   useEffect(() => {
-    if(!currUser) getUser();
     const fetchTests = async () => {
       try {
         const response = await axiosInstance.get(`/test/${semester}/${batch}`);
         setUpcomingTests(response.data.upcomingTests);
         setPastTests(response.data.pastTests);
-        console.log(response.data.pastTests);
       } catch (error) {
         console.error("Error fetching tests:", error);
         toast.error("Failed to load tests.");
@@ -26,7 +24,7 @@ const Tests = ({ semester, batch }) => {
     };
 
     fetchTests();
-  }, [semester, batch, getUser]);
+  }, [semester, batch]);
 
   const isTestActive = (startTime, duration) => {
     const currentTime = new Date();

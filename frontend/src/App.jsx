@@ -1,30 +1,57 @@
 import React from "react";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import Workspace from "./pages/Workspace/Workspace";
-import Home from "./pages/Main/Home";
-import { Route, Routes } from "react-router-dom";
+import Home from "./pages/Home";
+import { Route, Routes, useLocation } from "react-router-dom";
 import Navbar from "./components/Navbar";
-import GLogin from "./components/GLogin";
-import AddQues from "./components/AddQues";
-import AddTest from "./components/AddTest";
+import AddQues from "./pages/AddQues";
+import AddTest from "./pages/AddTest";
 import Tests from "./pages/Tests";
 import UserState from "./context/user/UserState";
+import Auth from "./pages/Auth";
+import ProtectedRoute from "./components/ProtectedRoute";
+import SideBar from "./components/SideBar";
 
 const App = () => {
+  const location = useLocation();
+
+  const hideNavbarRoutes = ["/auth"];
+  const hideSideBarRoutes = ["/auth"];
   return (
     <UserState>
       <ToastContainer />
-      <Navbar />
-      <div className="main">
-        <Routes>
-          <Route exact path="/home" element={<Home />} />
-          <Route exact path="/problem/:id" element={<Workspace />} />
-          <Route exact path="/auth" element={<GLogin />} />
-          <Route exact path="/add/Ques" element={<AddQues />} />
-          <Route exact path="/add/Test" element={<AddTest />} />
-          <Route exact path="/tests" element={<Tests semester={5} batch="F1"/>} />
-        </Routes>
+      {!hideNavbarRoutes.includes(location.pathname) && <Navbar />}
+
+      <div className="flex">
+        {!hideSideBarRoutes.includes(location.pathname) && <SideBar />}
+
+        <div className="main flex-1">
+          <Routes>
+            <Route exact path="/auth" element={<Auth />} />
+            <Route
+              exact
+              path="/home"
+              element={<ProtectedRoute element={<Home />} />}
+            />
+            <Route
+              exact
+              path="/ques/add"
+              element={<ProtectedRoute element={<AddQues />} />}
+            />
+            <Route
+              exact
+              path="/test/add"
+              element={<ProtectedRoute element={<AddTest />} />}
+            />
+            <Route
+              exact
+              path="/tests"
+              element={
+                <ProtectedRoute element={<Tests semester={5} batch="F1" />} />
+              }
+            />
+          </Routes>
+        </div>
       </div>
     </UserState>
   );

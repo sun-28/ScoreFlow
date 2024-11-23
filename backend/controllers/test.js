@@ -14,8 +14,6 @@ const createTest = async (req, res) => {
   } = req.body;
 
   const createdBy = req.user._id;
-  console.log(createdBy);
-
   try {
     const questionDocuments = await Question.find({ _id: { $in: questions } });
 
