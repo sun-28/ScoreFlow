@@ -1,8 +1,9 @@
-const Agenda = require("agenda");
-const mongoose = require("mongoose");
-const { execSync } = require("child_process");
-const TestModel = require("./TestModel");
-const TestInfoModel = require("./TestInfoModel");
+
+const Agenda = require('agenda');
+const mongoose = require('mongoose');
+const { execSync } = require('child_process');
+const TestModel = require('../models/Test'); 
+const PlagModel = require('../models/Plag'); 
 const dotenv = require("dotenv");
 dotenv.config();
 
@@ -54,7 +55,7 @@ agenda.define("check plagiarism for test", async (job) => {
   try {
     const testRecords = await TestModel.find({ testId });
     const language = "";
-
+   
     const groupedByQuestion = testRecords.reduce((acc, record) => {
       acc[record.questionId] = acc[record.questionId] || [];
       acc[record.questionId].push(record);
@@ -82,14 +83,23 @@ agenda.define("check plagiarism for test", async (job) => {
             const plagiarismScore = match ? parseInt(match[1], 10) : 0;
 
             if (plagiarismScore > 75) {
-              const testInfoRecord = new TestInfoModel({
-                questionId,
-                student1: records[i].enroll,
-                student2: records[j].enroll,
-                plagiarismScore,
-              });
+              
+              const test = await TestModel.findById(testId); 
+            
+              if (test) {
+                
+                test.plagiarismRecords.push({
+                  questionId,
+                  student1: records[i].enroll,
+                  student2: records[j].enroll,
+                  plagiarismScore,
+                });
+            
 
-              await testInfoRecord.save();
+                await test.save();
+              } else {
+                console.error(`Test with ID ${testId} not found.`);
+              }
               console.log(
                 `Plagiarism detected! Test: ${testId}, Question: ${questionId}, Students: ${records[i].enroll}, ${records[j].enroll}`
               );
