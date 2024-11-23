@@ -16,6 +16,7 @@ const submit = async (req, res) => {
       when: new Date(),
       verdict: "queued",
       language,
+      code,
     });
 
     await submission.save();
@@ -29,7 +30,6 @@ const submit = async (req, res) => {
       enroll: "1234",
       questionId,
     });
-
     return res.status(200).send({ jobId: job.id, status: "queued" });
   } catch (err) {
     return res.status(500).send({ error: err.message });

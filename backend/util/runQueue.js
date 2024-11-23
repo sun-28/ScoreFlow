@@ -60,6 +60,7 @@ codeQueue.process(async (job) => {
 
   let verdict = "accepted";
   const results = [];
+  const numberOfTestCasesPassed = 0;
 
   try {
     for (let i = 0; i < sampleTestCases.length; i++) {
@@ -82,7 +83,7 @@ codeQueue.process(async (job) => {
 
         const actualOutput = stdout.trim();
         const passed = actualOutput === output.trim();
-
+        passed && numberOfTestCasesPassed++;
         results.push({
           testCase: i + 1,
           passed,
@@ -146,7 +147,7 @@ codeQueue.process(async (job) => {
 
         const actualOutput = stdout.trim();
         const passed = actualOutput === output.trim();
-
+        passed && numberOfTestCasesPassed++;
         results.push({
           testCase: i + 1,
           passed,
@@ -175,7 +176,6 @@ codeQueue.process(async (job) => {
         fs.unlinkSync(tempInputFile);
       }
     }
-
     io.to(socketId).emit("job-completed", { status: "completed" });
   } catch (error) {
     verdict = "error";
@@ -188,10 +188,11 @@ codeQueue.process(async (job) => {
     }
   }
 
-  console.log("Verdict:", verdict);
-  console.log("Results:", results);
-
-  await Submission.findByIdAndUpdate(submissionId, { verdict, results });
+  await Submission.findByIdAndUpdate(submissionId, {
+    verdict,
+    results,
+    numberOfTestCasesPassed,
+  });
 
   const test = await Test.findById(testId);
 
@@ -205,12 +206,16 @@ codeQueue.process(async (job) => {
     studentSubmissions.set(questionId, {
       submissions: [],
       isAccepted: false,
+      numberOfTestCasesPassed: 0,
     });
   }
 
   const questionSubmissions = studentSubmissions.get(questionId);
-
   questionSubmissions.submissions.push(submissionId);
+
+  if (questionSubmissions.numberOfTestCasesPassed < numberOfTestCasesPassed) {
+    questionSubmissions.numberOfTestCasesPassed = numberOfTestCasesPassed;
+  }
 
   if (verdict === "accepted") {
     questionSubmissions.isAccepted = true;
@@ -226,6 +231,8 @@ codeQueue.process(async (job) => {
 
   // delete after the job is done using test id the test records and also unlinksync the file with the names 
 
+  console.log(test.submissions.get(enroll).get(questionId));
+  test.markModified("submissions");
 
   await test.save();
 });
