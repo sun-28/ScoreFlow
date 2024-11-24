@@ -1,11 +1,13 @@
-import React, { useEffect, useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import axiosInstance from "../util/axiosInstance";
+import userContext from "../context/user/userContext";
 
 const TestPage = () => {
   const { testid } = useParams();
   const navigate = useNavigate();
+  const { currUser } = useContext(userContext);
 
   const [testDetails, setTestDetails] = useState(null);
   const [timeRemaining, setTimeRemaining] = useState(null);
@@ -51,11 +53,27 @@ const TestPage = () => {
     return `${hours > 0 ? `${hours}h ` : ""}${minutes}m ${seconds}s`;
   };
 
+  const isAllTestCasesPassed = (questionId) => {
+    const studentSubmissions = testDetails?.submissions[currUser.enroll] || {};
+    const questionSubmission = studentSubmissions[questionId];
+    return questionSubmission?.isAccepted === true;
+  };
+
+  const getTestCaseRatio = (questionId) => {
+    const studentSubmissions = testDetails?.submissions[currUser.enroll] || {};
+    const questionSubmission = studentSubmissions[questionId];
+    const numberOfTestCasesPassed =
+      questionSubmission?.numberOfTestCasesPassed || 0;
+    return `${numberOfTestCasesPassed} / ${
+      testDetails.questions.find((q) => q._id === questionId).numberOfTestCases
+    }`;
+  };
+
   if (!testDetails) {
     return <p>Loading test details...</p>;
   }
 
-  const { subject, numberOfQuestions, questions, duration } = testDetails;
+  const { subject, numberOfQuestions, questions } = testDetails;
   const totalMarks = questions.reduce((acc, q) => acc + q.marks, 0);
 
   return (
@@ -75,15 +93,27 @@ const TestPage = () => {
       </div>
       <div className="grid gap-4">
         {questions.map((question, index) => (
-          <div key={question._id} className="p-4 bg-white shadow rounded">
-            <h2 className="text-lg font-semibold text-gray-800">
-              Question {index + 1}
-            </h2>
-            <p className="text-gray-700">{question.title}</p>
-            <p className="text-sm text-gray-500">
-              <strong>Marks:</strong> {question.marks}
-            </p>
-            {/* Add more UI for question answers/attempts */}
+          <div
+            key={question._id}
+            className={`p-4 ${
+              isAllTestCasesPassed() ? "bg-green-200" : "bg-white"
+            } shadow rounded flex justify-between items-center hover:bg-gray-100 cursor-pointer`}
+            onClick={() => navigate(`/test/${testid}/ques/${question._id}`)}
+          >
+            <div>
+              <h2 className="text-lg font-semibold text-gray-800">
+                Question {index + 1}
+              </h2>
+              <p className="text-gray-700">{question.title}</p>
+              <p className="text-sm text-gray-500">
+                <strong>Marks:</strong> {question.marks}
+              </p>
+            </div>
+            <div className="text-right">
+              <p className="text-gray-600 text-sm">
+                <strong>Test Cases:</strong> {getTestCaseRatio(question._id)}
+              </p>
+            </div>
           </div>
         ))}
       </div>

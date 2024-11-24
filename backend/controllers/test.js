@@ -70,8 +70,8 @@ const getTests = async (req, res) => {
 
     res.json({ upcomingTests, pastTests });
   } catch (err) {
-    console.log(err);
-    res.status(500).send(err.message);
+    res.status(500).send(err.message)
+    console.log(err)
   }
 };
 
@@ -98,8 +98,26 @@ const getTestById = async (req, res) => {
   }
 };
 
+const getTimeRemaining = async (req, res) => {
+  const { tid } = req.params;
+  try {
+    const test = await Test.findById(tid);
+    if (!test) {
+      return res.status(404).json({ message: "Test not found" });
+    }
+    const endTime = new Date(test.startTime);
+    endTime.setMinutes(endTime.getMinutes() + test.duration);
+    const currentTime = new Date();
+    const timeRemaining = endTime - currentTime;
+    res.json({ timeRemaining });
+  } catch (err) {
+    res.status(500).send(err.message);
+  }
+};
+
 module.exports = {
   createTest,
   getTests,
   getTestById,
+  getTimeRemaining,
 };
