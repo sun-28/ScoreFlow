@@ -142,15 +142,8 @@ codeQueue.process(async (job) => {
     } catch (error) {
       verdict = "error";
       io.to(socketId).emit("job-failed", { type, error: error.message });
-    } finally {
-      try {
-        fs.unlinkSync(tempCodeFile);
-      } catch (unlinkError) {
-        console.error(`Error removing temp code file: ${unlinkError.message}`);
-      }
     }
-
-    await Submission.findByIdAndUpdate(submissionId, { verdict });
+    await Submission.findByIdAndUpdate(submissionId, { verdict , path : tempCodeFile });
 
     const test = await Test.findById(testId);
 
@@ -239,7 +232,7 @@ codeQueue.process(async (job) => {
       }
     }
 
-    io.to(socketId).emit("job-completed", { type, status: "completed" });
+    io.to(socketId).emit("job-completed", { type, status : "completed" });
   }
 });
 
