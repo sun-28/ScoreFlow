@@ -19,6 +19,8 @@ passport.use(
         return done(null, false, { message: "Unauthorized domain" });
       }
       let role;
+      let seme = 5;
+      let bat = "F1";
       try {
         const teacher = await Teacher.findOne({ email });
         if (teacher) {
@@ -34,14 +36,18 @@ passport.use(
           student = new Student({
             displayName: profile.name.givenName,
             enroll: profile.name.familyName,
-            semester: 5,
-            batch: "F1",
+            semester: seme,
+            batch: bat,
+            photo: profile.photos[0].value,
           });
           await student.save();
         }
         role = "student";
         profile.role = role;
         profile._id = student._id;
+        profile.semester = seme;
+        profile.batch = bat;
+
         return done(null, profile);
       } catch (error) {
         console.error("Error saving user:", error);

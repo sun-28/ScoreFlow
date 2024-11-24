@@ -13,6 +13,10 @@ import ProtectedRoute from "./components/ProtectedRoute";
 import SideBar from "./components/SideBar";
 import userContext from "./context/user/userContext";
 import CodeSpace from "./pages/CodeSpace";
+import Profile from "./pages/Profile";
+import Questions from "./pages/Questions";
+import ReviewTests from "./pages/ReviewTests";
+import TestReview from "./pages/TestReview";
 
 const App = () => {
   const location = useLocation();
@@ -65,7 +69,12 @@ const App = () => {
               path="/tests"
               element={
                 <ProtectedRoute
-                  element={<Tests semester={5} batch="F1" />}
+                  element={
+                    <Tests
+                      semester={currUser?.semester || 5}
+                      batch={currUser?.batch || "F1"}
+                    />
+                  }
                   roles={["student", "teacher"]}
                 />
               }
@@ -77,7 +86,34 @@ const App = () => {
                 <ProtectedRoute
                   element={<CodeSpace />}
                   roles={["student", "teacher"]}
-                />
+                />}
+            />
+            <Route
+              exact
+              path="/profile"
+              element={
+                <ProtectedRoute element={<Profile />} roles={["student"]} />
+              }
+            />
+            <Route
+              exact
+              path="/questions"
+              element={
+                <ProtectedRoute element={<Questions />} roles={["teacher"]} />
+              }
+            />
+            <Route
+              exact
+              path="/test/review/:testid"
+              element={
+                <ProtectedRoute element={<TestReview />} roles={["teacher"]} />
+              }
+            />
+            <Route
+              exact
+              path="/tests/review"
+              element={
+                <ProtectedRoute element={<ReviewTests />} roles={["teacher"]} />
               }
             />
           </Routes>

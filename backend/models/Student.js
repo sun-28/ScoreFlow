@@ -10,6 +10,9 @@ const studentSchema = new Schema({
     type: String,
     required: true,
   },
+  photo: {
+    type: String,
+  },
   semester: {
     type: Number,
     required: true,
@@ -18,6 +21,17 @@ const studentSchema = new Schema({
     type: String,
     required: true,
   },
+  testScores: [
+    {
+      test: {
+        type: Schema.Types.ObjectId,
+        ref: "Tests",
+      },
+      score: {
+        type: Number,
+      },
+    },
+  ],
 });
 
 module.exports = mongoose.model("Students", studentSchema);
