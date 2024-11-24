@@ -16,6 +16,7 @@ const plagiarismEntrySchema = new mongoose.Schema({
 });
 
 const testSchema = new mongoose.Schema({
+  testName: {type: String},
   subject: { type: String, required: true },
   startTime: { type: Date, required: true },
   duration: { type: Number, required: true },

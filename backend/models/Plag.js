@@ -3,11 +3,11 @@ const mongoose = require('mongoose');
 
 const PlagSchema = new mongoose.Schema({
   testId: {
-    type: ObjectId,
+    type: mongoose.Schema.Types.ObjectId,
     required: true,
   },
   questionId: {
-    type: ObjectId,
+    type: mongoose.Schema.Types.ObjectId,
     required: true,
   },
   enroll: {
