@@ -2,22 +2,20 @@ import React, { useState, useEffect } from "react";
 import { useParams } from "react-router-dom"; // To get route params
 import Split from "react-split";
 import { toast } from "react-toastify";
-import ProblemDescription from "./ProblemDescription";
-import CodeEditor from "./CodeEditor";
-import TestCases from "./TestCases";
-import ResultModal from "./ResultModal";
+import ProblemDescription from "../components/ProblemDescription";
+import CodeEditor from "../components/CodeEditor";
+import TestCases from "../components/TestCases";
+import ResultModal from "../components/ResultModal";
 import io from "socket.io-client";
 import axios from "axios";
-import { ques } from "./ques";
+import axiosInstance from "../util/axiosInstance";
 
-const SOCKET_SERVER_URL = "http://localhost:3001";
-// const SOCKET_SERVER_URL = import.meta.env.VITE_SOCKET_SERVER_URL;
-// const API_SERVER_URL = import.meta.env.VITE_API_SERVER_URL;
-const API_SERVER_URL = "http://localhost:3000";
+const SOCKET_SERVER_URL = import.meta.env.VITE_SOCKET_SERVER_URL;
+const API_SERVER_URL = import.meta.env.VITE_API_SERVER_URL;
 const socket = io(SOCKET_SERVER_URL);
 
-function Workspace() {
-  const { id } = useParams();
+const CodeSpace = () => {
+  const { testid, quesid } = useParams();
   const [details, setDetails] = useState(null);
   const [testCases, setTestCases] = useState([]);
   const [code, setCode] = useState("");
@@ -27,16 +25,23 @@ function Workspace() {
   const [showModal, setShowModal] = useState(false);
   const [jobStarted, setJobStarted] = useState(false);
 
-  useEffect(() => {
-    const question = ques.find((q) => q.id === id);
-
-    if (question) {
-      setDetails(question);
-      setTestCases(question.examples);
-    } else {
-      toast.error("Question not found");
+  const getQuestionDetails = async () => {
+    try {
+      const response = await axiosInstance.get(
+        `/ques/${quesid}?testid=${testid}`
+      );
+      console.log(response.data.question);
+      setDetails(response.data.question);
+      setTestCases(response.data.question.sampleTestCases);
+    } catch (error) {
+      console.error("Error fetching question details:", error);
+      toast.error("Failed to load question.");
     }
-  }, [id]);
+  };
+
+  useEffect(() => {
+    getQuestionDetails()
+  }, []);
 
   useEffect(() => {
     socket.on("connect", () => {
@@ -149,6 +154,6 @@ function Workspace() {
       />
     </div>
   );
-}
+};
 
-export default Workspace;
+export default CodeSpace;

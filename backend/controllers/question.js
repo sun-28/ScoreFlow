@@ -1,4 +1,5 @@
 const Question = require("../models/Question");
+const Test = require("../models/Test");
 
 const createQuestion = async (req, res) => {
   const {
@@ -13,7 +14,6 @@ const createQuestion = async (req, res) => {
   } = req.body;
 
   try {
-
     const numberOfTestCases = sampleTestCases.length + hiddenTestCases.length;
 
     const question = new Question({
@@ -69,43 +69,34 @@ const getQuestions = async (req, res) => {
   }
 };
 
-const getTestQuestionById = async (req, res) => {
-  const { testid, questionid } = req.params;
+const getQuestion = async (req, res) => {
+  const { id } = req.params;
+  const testid = req.query.testid;
   try {
     const test = await Test.findById(testid);
     if (!test) {
       return res.status(404).json({ message: "Test not found" });
     }
-
     const currentTime = new Date();
     const startTime = new Date(test.startTime);
-    const endTime = new Date(startTime);
-
+    const endTime = new Date(test.startTime);
     endTime.setMinutes(endTime.getMinutes() + test.duration);
-
-    if (currentTime < startTime) {
-      return res
-        .status(400)
-        .json({ message: "Test has not started yet." });
+    if (currentTime < startTime || currentTime > endTime) {
+      return res.status(400).json({ message: "Test is not active" });
     }
-
-    const question = test.questions.find((q) => q._id.toString() === questionid);
-    
+    const question = await Question.findById(id);
     if (!question) {
       return res.status(404).json({ message: "Question not found" });
     }
-
-    res.status(200).json(question);
-
+    res.json({ message: "Question retrieved successfully", question });
   } catch (error) {
-    console.error("Error fetching question:", error);
-    res.status(500).json({ message: "Internal Server Error" });
+    res.status(500).send(error.message);
   }
-}
+};
 
 module.exports = {
   createQuestion,
   updateQuestion,
   getQuestions,
-  getTestQuestionById,
+  getQuestion,
 };

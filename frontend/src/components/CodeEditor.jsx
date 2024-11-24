@@ -1,9 +1,8 @@
 import React, { useState, useEffect } from "react";
 import Editor from "@monaco-editor/react";
 
-const CodeEditor = ({ onChange, language, onLanguageChange }) => {
-  const [value, setValue] = useState("");
-
+const CodeEditor = ({code,onChange, language, onLanguageChange }) => {
+  
   const defaultCode = {
     javascript: `// JavaScript Code Here\n\n// Write your code here`,
     cpp: `// C++ Code Here\n#include <iostream>\nusing namespace std;\n\nint main() {\n  // Write your code here\n  return 0;\n}`,
@@ -12,11 +11,10 @@ const CodeEditor = ({ onChange, language, onLanguageChange }) => {
   };
 
   useEffect(() => {
-    setValue(defaultCode[language] || "");
+    onChange(defaultCode[language] || "");
   }, [language]);
 
   const handleEditorChange = (value) => {
-    setValue(value);
     onChange(value);
   };
 
@@ -25,8 +23,8 @@ const CodeEditor = ({ onChange, language, onLanguageChange }) => {
   };
 
   return (
-    <div className="flex flex-col h-full bg-white border rounded-md p-4">
-      <div className="flex items-center border-b mb-2 pb-2">
+    <div className="editor-container">
+      <div className="code-editor-heading p-1">
         <select
           value={language}
           onChange={handleLanguageChange}
@@ -39,9 +37,10 @@ const CodeEditor = ({ onChange, language, onLanguageChange }) => {
         </select>
       </div>
       <Editor
-        height={`100%`}
+        width={`100%`}
+        height={`86%`}
         language={language}
-        value={value}
+        value={code}
         onChange={handleEditorChange}
       />
     </div>

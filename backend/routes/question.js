@@ -5,12 +5,12 @@ const {
   createQuestion,
   updateQuestion,
   getQuestions,
-  getTestQuestionById,
+  getQuestion,
 } = require("../controllers/question");
 
 router.post("/create", requireRole(["teacher"]), createQuestion);
 router.put("/update/:id",requireRole(["teacher"]) ,updateQuestion);
 router.get("/get",requireRole(["teacher"]),getQuestions);
-router.get("/get/:testid/:questionid",requireRole(["student"]),getTestQuestionById);
+router.get("/:id",requireRole(["student","teacher"]),getQuestion);
 
 module.exports = router;

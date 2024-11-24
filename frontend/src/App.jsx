@@ -12,6 +12,7 @@ import Auth from "./pages/Auth";
 import ProtectedRoute from "./components/ProtectedRoute";
 import SideBar from "./components/SideBar";
 import userContext from "./context/user/userContext";
+import CodeSpace from "./pages/CodeSpace";
 
 const App = () => {
   const location = useLocation();
@@ -65,6 +66,16 @@ const App = () => {
               element={
                 <ProtectedRoute
                   element={<Tests semester={5} batch="F1" />}
+                  roles={["student", "teacher"]}
+                />
+              }
+            />
+            <Route
+              exact
+              path="/test/:testid/ques/:quesid"
+              element={
+                <ProtectedRoute
+                  element={<CodeSpace />}
                   roles={["student", "teacher"]}
                 />
               }
