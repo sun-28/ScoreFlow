@@ -55,7 +55,6 @@ agenda.define("check plagiarism for test", async (job) => {
   try {
     const testRecords = await PlagModel.find({ testId });
     const language = "";
-   
     const groupedByQuestion = testRecords.reduce((acc, record) => {
       acc[record.questionId] = acc[record.questionId] || [];
       acc[record.questionId].push(record);
