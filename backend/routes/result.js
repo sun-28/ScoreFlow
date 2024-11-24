@@ -8,6 +8,9 @@ router.get("/", requireRole(["teacher,student"]), getAllTests);
 router.get("/:testid", requireRole(["student,teacher"]),getTestById);
 router.get("/:testid/:questionid", requireRole(["student,teacher"]),getQuestionSubmissions);
 router.get("/:testid", requireRole(["teacher"]),getPlagedRecords);
+// post marks
+// update marks 
+
 
 
 
