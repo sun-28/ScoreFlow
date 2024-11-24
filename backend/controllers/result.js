@@ -1,5 +1,7 @@
 const Test = require('../models/Test')
-const Submission = require('../models/Submission')
+
+
+
 const getAllTests = async (req,res)=>{
     try {
 
@@ -12,7 +14,6 @@ const getAllTests = async (req,res)=>{
         }else{
             res.status(200).json(allTests);
         } 
-
         
     } catch (error) {
         console.log(error)
@@ -63,38 +64,58 @@ const getPlagedRecords = async (req,res) =>{
     }
 }
 
-
 const getStudentSubmissions = async (req, res) => {
-    try {
-            const { testId, enroll, questionId } = req.params;
+  try {
+    const { testId, enroll, questionId } = req.params;
 
-            const test = await Test.findById(testId).exec();
+    const test = await Test.findById(testId)
+      .populate({
+        path: "submissions",
+        populate: {
+          path: "submissions.submissions", 
+          model: "Submissions",
+        },
+      })
+      .exec();
 
-            if (!test) {
-                return res.status(404).json({ error: "Test not found" });
-            }
-            const studentSubmissionsMap = test.submissions.get(enroll);
+    if (!test) {
+      return res.status(404).json({ error: "Test not found" });
+    }
 
-            if (!studentSubmissionsMap) {
-                return res.status(404).json({ error: "No submissions found for the student" });
-            }
-        
-            const submissionEntry = studentSubmissionsMap.get(questionId);
+    const studentSubmissions = test.submissions.get(enroll);
+    
+    if (!studentSubmissions) {
+      return res
+        .status(404)
+        .json({ error: "No submissions found for this student" });
+    }
 
-            if (!submissionEntry) {
-                return res.status(404).json({ error: "No submissions found for the specified question" });
-            }
+    let response = [];
 
-            const populatedSubmissions = await Submission.find({
-                _id: { $in: submissionEntry.submissions },
-            });
+    if (questionId) {
+      const questionSubmissions = studentSubmissions.get(questionId);
+      if (!questionSubmissions) {
+        return res
+          .status(404)
+          .json({ error: "No submissions found for this question" });
+      }
 
-            res.status(200).json(populatedSubmissions);
-        } catch (error) {
-            console.error(error);
-            res.status(500).json({ error: "An error occurred while fetching submissions" });
-        }
-    };
+      response = {
+        questionId,
+        isAccepted: questionSubmissions.isAccepted,
+        numberOfTestCasesPassed: questionSubmissions.numberOfTestCasesPassed,
+        submissions: questionSubmissions.submissions,
+      };
+    }
+    res.status(200).json(response);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({
+      error: "An error occurred while retrieving submissions",
+    });
+  }
+};
+
 
 const saveMarks = async (req, res) => {
     try {
@@ -155,6 +176,7 @@ const saveMarks = async (req, res) => {
             });
         }
     };
+
 module.exports= {
     getAllTests,
     getPlagedRecords,

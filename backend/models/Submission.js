@@ -23,13 +23,6 @@ const submissionSchema = new Schema({
     type: String,
     require: true,
   },
-  isAccepted: {
-    type: Boolean,
-    default: false,
-  },
-  numberOfTestCasesPassed: {
-    type: Number,
-    default: 0,
-  },
+
 });
 module.exports = mongoose.model("Submissions", submissionSchema);

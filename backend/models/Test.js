@@ -3,6 +3,8 @@ const mongoose = require("mongoose");
 // Submission entry schema
 const submissionEntrySchema = new mongoose.Schema({
   submissions: [{ type: mongoose.Schema.Types.ObjectId, ref: "Submissions" }],
+  isAccepted: { type: Boolean, default: false },
+  numberOfTestCasesPassed: { type: Number, default: 0 },
 });
 
 // Plagiarism entry schema
