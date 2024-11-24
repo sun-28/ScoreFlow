@@ -23,10 +23,10 @@ const submit = async (req, res) => {
       code,
       language,
       socketId,
+      enroll: req.user.name.familyName,
       testId,
       questionId,
       submissionId: submission._id,
-      enroll: req.user.enroll,
     });
     return res.status(200).send({ jobId: job.id, status: "queued" });
   } catch (err) {
@@ -34,7 +34,7 @@ const submit = async (req, res) => {
   }
 };
 
-const runSampleTestCases = async (req,res) => {
+const runSampleTestCases = async (req, res) => {
   const { code, language, socketId, testId, questionId } = req.body;
   const studentId = req.user._id;
   if (!code || !language || !testId || !questionId || !studentId) {
@@ -46,6 +46,7 @@ const runSampleTestCases = async (req,res) => {
       code,
       language,
       socketId,
+      enroll: req.user.name.familyName,
       testId,
       questionId,
     });

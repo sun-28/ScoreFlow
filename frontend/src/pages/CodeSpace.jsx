@@ -1,13 +1,14 @@
 import React, { useState, useEffect } from "react";
-import { useParams } from "react-router-dom"; // To get route params
+import { useParams } from "react-router-dom";
 import Split from "react-split";
 import { toast } from "react-toastify";
 import ProblemDescription from "../components/ProblemDescription";
 import CodeEditor from "../components/CodeEditor";
 import TestCases from "../components/TestCases";
-import ResultModal from "../components/ResultModal";
 import io from "socket.io-client";
 import axiosInstance from "../util/axiosInstance";
+import RunResultModal from "../components/RunResultModal";
+import SubmitResultModal from "../components/SumbitResultModal";
 
 const SOCKET_SERVER_URL = import.meta.env.VITE_SOCKET_SERVER_URL;
 const socket = io(SOCKET_SERVER_URL);
@@ -19,8 +20,10 @@ const CodeSpace = () => {
   const [code, setCode] = useState("");
   const [language, setLanguage] = useState("cpp");
   const [processing, setProcessing] = useState(false);
-  const [results, setResults] = useState([]);
-  const [showModal, setShowModal] = useState(false);
+  const [runResults, setRunResults] = useState([]);
+  const [submitResults, setSubmitResults] = useState([]);
+  const [showRunModal, setShowRunModal] = useState(false);
+  const [showSubmitModal, setShowSubmitModal] = useState(false);
   const [jobStarted, setJobStarted] = useState(false);
 
   const getQuestionDetails = async () => {
@@ -31,7 +34,10 @@ const CodeSpace = () => {
       console.log(response.data.question);
       setDetails(response.data.question);
       setTestCases(response.data.question.sampleTestCases);
-      setResults( Array(response.data.question.sampleTestCases.length).fill({}));
+      setRunResults(
+        Array(response.data.question.sampleTestCases.length).fill({})
+      );
+      setSubmitResults( Array(response.data.question.sampleTestCases.length+response.data.question.hiddenTestCases.length).fill({}));
     } catch (error) {
       console.error("Error fetching question details:", error);
       toast.error("Failed to load question.");
@@ -48,34 +54,51 @@ const CodeSpace = () => {
     });
 
     socket.on("sample-testcase-result", (data) => {
-      console.log(data)
-      setResults((prevResults) => {
-        const newResults = [...prevResults];
-        newResults[data.testCase - 1] = data;
-        return newResults;
+      setRunResults((prevrunResults) => {
+        const newrunResults = [...prevrunResults];
+        newrunResults[data.testCase - 1] = data;
+        return newrunResults;
       });
     });
 
-    socket.on("job-started", () => {
+    socket.on("job-started", (data) => {
       setJobStarted(true);
-      setShowModal(true);
+      if (data.type === "submit") {
+        setShowSubmitModal(true);
+      } else {
+        setShowRunModal(true);
+      }
       console.log("Job started");
     });
 
-    socket.on("job-completed", () => {
+    socket.on("job-completed", (data) => {
       toast.success("Run Successful");
       setProcessing(false);
-      setShowModal(true);
+      if (data.type === "submit") {
+        setShowSubmitModal(true);
+      } else {
+        setShowRunModal(true);
+      }
     });
 
-    socket.on("job-failed", (error) => {
+    socket.on("job-failed", (data) => {
       console.error("Job failed:", error);
       toast.error("Job failed: " + error.message);
       setProcessing(false);
     });
 
+    socket.on("testcase-result", (data) => {
+      console.log(data)
+      setSubmitResults((prev) => {
+        const newRes = [...prev];
+        newRes[data.testCase - 1] = data;
+        return newRes;
+      });
+    });
+
     return () => {
       socket.off("sample-testcase-result");
+      socket.off("testcase-result");
       socket.off("job-started");
       socket.off("job-completed");
       socket.off("job-failed");
@@ -93,8 +116,8 @@ const CodeSpace = () => {
   const handleSubmit = async () => {
     setProcessing(true);
     setJobStarted(false);
-    setResults(
-      testCases.map((testCase) => ({
+    setSubmitResults(
+      (data) =>data.map((testCase) => ({
         ...testCase,
         output: "Running...",
         passed: null,
@@ -120,7 +143,7 @@ const CodeSpace = () => {
   const handleRun = async () => {
     setProcessing(true);
     setJobStarted(false);
-    setResults(
+    setRunResults(
       testCases.map((testCase) => ({
         ...testCase,
         output: "Running...",
@@ -144,8 +167,11 @@ const CodeSpace = () => {
     }
   };
 
-  const handleCloseModal = () => {
-    setShowModal(false);
+  const handleCloseRunModal = () => {
+    setShowRunModal(false);
+  };
+  const handleCloseSubmitModal = () => {
+    setShowSubmitModal(false);
   };
 
   if (!details) return <div>Loading...</div>;
@@ -175,16 +201,19 @@ const CodeSpace = () => {
             testCases={testCases}
             setTestCases={setTestCases}
             processing={processing}
-            results={results}
+            runResults={runResults}
           />
         </Split>
       </Split>
-      <ResultModal
-        show={showModal}
-        onClose={handleCloseModal}
-        results={results}
-        processing={processing}
-        jobStarted={jobStarted}
+      <RunResultModal
+        show={showRunModal}
+        onClose={handleCloseRunModal}
+        runResults={runResults}
+      />
+      <SubmitResultModal
+        show={showSubmitModal}
+        onClose={handleCloseSubmitModal}
+        submitResults={submitResults}
       />
     </div>
   );

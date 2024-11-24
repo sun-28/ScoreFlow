@@ -57,16 +57,19 @@ const findError = (stderr) => {
 };
 
 codeQueue.process(async (job) => {
-  io.to(job.data.socketId).emit("job-started", { status: "started" });
+  io.to(job.data.socketId).emit("job-started", {
+    type: job.data.type,
+    status: "started",
+  });
   const {
     type,
     code,
     language,
     socketId,
+    enroll,
     testId,
     questionId,
     submissionId,
-    enroll,
   } = job.data;
 
   const question = await Question.findById(questionId);
@@ -83,12 +86,12 @@ codeQueue.process(async (job) => {
     const hiddenTestCases = question.hiddenTestCases;
     const testCases = sampleTestCases.concat(hiddenTestCases);
     let verdict = "accepted";
-    const numberOfTestCasesPassed = 0;
+    let numberOfTestCasesPassed = 0;
 
     try {
       for (let i = 0; i < testCases.length; i++) {
         const { input, output } = testCases[i];
-
+        console.log(input, output);
         const testFile = crypto.randomUUID();
         const tempInputFile = path.join(
           __dirname,
@@ -118,6 +121,8 @@ codeQueue.process(async (job) => {
 
           if (!passed) verdict = "failed";
         } catch (error) {
+          console.log(error);
+
           errorMessage = findError(error);
 
           const testCaseResult = {
@@ -133,10 +138,10 @@ codeQueue.process(async (job) => {
           fs.unlinkSync(tempInputFile);
         }
       }
-      io.to(socketId).emit("job-completed", { status: "completed" });
+      io.to(socketId).emit("job-completed", { type, status: "completed" });
     } catch (error) {
       verdict = "error";
-      io.to(socketId).emit("job-failed", { error: error.message });
+      io.to(socketId).emit("job-failed", { type, error: error.message });
     } finally {
       try {
         fs.unlinkSync(tempCodeFile);
@@ -185,6 +190,8 @@ codeQueue.process(async (job) => {
 
     test.markModified("submissions");
 
+    console.log(test.submissions)
+
     await test.save();
   } else {
     for (let i = 0; i < sampleTestCases.length; i++) {
@@ -211,6 +218,7 @@ codeQueue.process(async (job) => {
         const testCaseResult = {
           testCase: i + 1,
           passed,
+          input,
           expectedOutput: output,
           actualOutput,
           verdict: passed ? "Accepted" : "Wrong Answer",
@@ -231,7 +239,7 @@ codeQueue.process(async (job) => {
       }
     }
 
-    io.to(socketId).emit("job-completed", { status: "completed" });
+    io.to(socketId).emit("job-completed", { type, status: "completed" });
   }
 });
 
