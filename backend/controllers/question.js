@@ -69,8 +69,43 @@ const getQuestions = async (req, res) => {
   }
 };
 
+const getTestQuestionById = async (req, res) => {
+  const { testid, questionid } = req.params;
+  try {
+    const test = await Test.findById(testid);
+    if (!test) {
+      return res.status(404).json({ message: "Test not found" });
+    }
+
+    const currentTime = new Date();
+    const startTime = new Date(test.startTime);
+    const endTime = new Date(startTime);
+
+    endTime.setMinutes(endTime.getMinutes() + test.duration);
+
+    if (currentTime < startTime) {
+      return res
+        .status(400)
+        .json({ message: "Test has not started yet." });
+    }
+
+    const question = test.questions.find((q) => q._id.toString() === questionid);
+    
+    if (!question) {
+      return res.status(404).json({ message: "Question not found" });
+    }
+
+    res.status(200).json(question);
+
+  } catch (error) {
+    console.error("Error fetching question:", error);
+    res.status(500).json({ message: "Internal Server Error" });
+  }
+}
+
 module.exports = {
   createQuestion,
   updateQuestion,
-  getQuestions
+  getQuestions,
+  getTestQuestionById,
 };

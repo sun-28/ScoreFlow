@@ -56,7 +56,7 @@ const App = () => {
               exact
               path="/test/:testid"
               element={
-                <ProtectedRoute element={<TestPage />} roles={["teacher"]} />
+                <ProtectedRoute element={<TestPage />} roles={["student"]} />
               }
             />
             <Route
