@@ -97,8 +97,8 @@ const TestPage = () => {
             key={question._id}
             className={`p-4 ${
               isAllTestCasesPassed() ? "bg-green-200" : "bg-white"
-            } shadow rounded flex justify-between items-center`}
-            onClick={() => navigate(`/test/${testid}/${question._id}`)}
+            } shadow rounded flex justify-between items-center hover:bg-gray-100 cursor-pointer`}
+            onClick={() => navigate(`/test/${testid}/ques/${question._id}`)}
           >
             <div>
               <h2 className="text-lg font-semibold text-gray-800">

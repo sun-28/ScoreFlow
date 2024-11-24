@@ -40,7 +40,7 @@ const CodeSpace = () => {
   };
 
   useEffect(() => {
-    getQuestionDetails()
+    getQuestionDetails();
   }, []);
 
   useEffect(() => {
@@ -127,7 +127,14 @@ const CodeSpace = () => {
 
   return (
     <div className="workspace">
-      <Split className="split" minSize={0}>
+      <Split
+        className="split"
+        minSize={0}
+        // gutterStyle={{
+        //   backgroundColor: "#101124",
+        //   cursor: "col-resize",
+        // }}
+      >
         <ProblemDescription details={details} />
         <Split className="split-vertical" direction="vertical">
           <CodeEditor
@@ -135,6 +142,7 @@ const CodeSpace = () => {
             onChange={onChange}
             language={language}
             onLanguageChange={onLanguageChange}
+            testid={testid}
           />
           <TestCases
             handleCompile={handleCompile}

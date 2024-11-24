@@ -12,18 +12,20 @@ const Tests = ({ semester, batch }) => {
 
   const { currUser } = context;
 
-  useEffect(() => {
-    const fetchTests = async () => {
-      try {
-        const response = await axiosInstance.get(`/test/${semester}/${batch}`);
-        setUpcomingTests(response.data.upcomingTests);
-        setPastTests(response.data.pastTests);
-      } catch (error) {
-        console.error("Error fetching tests:", error);
-        toast.error("Failed to load tests.");
-      }
-    };
+  const fetchTests = async () => {
+    try {
+      const response = await axiosInstance.get(
+        `/test/sem/${semester}/batch/${batch}`
+      );
+      setUpcomingTests(response.data.upcomingTests);
+      setPastTests(response.data.pastTests);
+    } catch (error) {
+      console.error("Error fetching tests:", error);
+      toast.error("Failed to load tests.");
+    }
+  };
 
+  useEffect(() => {
     fetchTests();
   }, [semester, batch]);
 
