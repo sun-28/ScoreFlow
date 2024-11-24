@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 
-const TestCases = ({ handleCompile, testCases, processing }) => {
+const TestCases = ({ handleSubmit, handleRun, testCases, processing }) => {
   const [activeTab, setActiveTab] = useState(0);
 
   const handleTabChange = (index) => {
@@ -49,7 +49,7 @@ const TestCases = ({ handleCompile, testCases, processing }) => {
       <div className="mt-4 flex gap-4">
         <button
           onClick={() => {
-            handleCompile();
+            handleRun();
           }}
           className={`w-full py-2 rounded-md ${
             processing ? "bg-gray-500" : "bg-gray-800"
@@ -62,7 +62,7 @@ const TestCases = ({ handleCompile, testCases, processing }) => {
         </button>
         <button
           onClick={() => {
-            handleCompile();
+            handleSubmit();
           }}
           className={`w-full py-2 rounded-md ${
             processing ? "bg-gray-500" : "bg-green-500"

@@ -1,6 +1,6 @@
 import React from "react";
 
-const ResultModal = ({ show, onClose, results, processing, jobStarted }) => {
+const ResultModal = ({ show, onClose, results}) => {
   if (!show) return null;
 
   return (

@@ -58,14 +58,19 @@ const findError = (stderr) => {
 
 codeQueue.process(async (job) => {
   io.to(job.data.socketId).emit("job-started", { status: "started" });
-
-  const { code, language, socketId, testId, submissionId, enroll, questionId } =
-    job.data;
+  const {
+    type,
+    code,
+    language,
+    socketId,
+    testId,
+    questionId,
+    submissionId,
+    enroll,
+  } = job.data;
 
   const question = await Question.findById(questionId);
-
   const sampleTestCases = question.sampleTestCases;
-  const hiddenTestCases = question.hiddenTestCases;
 
   const codeFile = crypto.randomUUID();
   const tempCodeFile = path.join(__dirname, `tempCode/${codeFile}.${language}`);
@@ -74,10 +79,114 @@ codeQueue.process(async (job) => {
 
   const dockerImage = imageSelector(language);
 
-  let verdict = "accepted";
-  const numberOfTestCasesPassed = 0;
+  if (type === "submit") {
+    const hiddenTestCases = question.hiddenTestCases;
+    const testCases = sampleTestCases.concat(hiddenTestCases);
+    let verdict = "accepted";
+    const numberOfTestCasesPassed = 0;
 
-  try {
+    try {
+      for (let i = 0; i < testCases.length; i++) {
+        const { input, output } = testCases[i];
+
+        const testFile = crypto.randomUUID();
+        const tempInputFile = path.join(
+          __dirname,
+          `tempInput/${testFile}${i}.txt`
+        );
+
+        fs.writeFileSync(tempInputFile, input);
+
+        const dockerCommand = `docker run --rm --memory=${MEMORY_LIMIT} -v ${tempCodeFile}:/app/Main.${language} -v ${tempInputFile}:/app/input.txt ${dockerImage}`;
+
+        try {
+          const { stdout, stderr } = await execPromise(dockerCommand);
+
+          if (stderr) throw new Error(stderr);
+
+          const actualOutput = stdout.trim();
+          const passed = actualOutput === output.trim();
+          passed && numberOfTestCasesPassed++;
+
+          const testCaseResult = {
+            testCase: i + 1,
+            passed,
+            verdict: passed ? "Accepted" : "Wrong Answer",
+          };
+
+          io.to(socketId).emit("testcase-result", testCaseResult);
+
+          if (!passed) verdict = "failed";
+        } catch (error) {
+          errorMessage = findError(error);
+
+          const testCaseResult = {
+            testCase: i + 1,
+            passed: false,
+            verdict: errorMessage,
+          };
+
+          io.to(socketId).emit("testcase-result", testCaseResult);
+
+          verdict = "failed";
+        } finally {
+          fs.unlinkSync(tempInputFile);
+        }
+      }
+      io.to(socketId).emit("job-completed", { status: "completed" });
+    } catch (error) {
+      verdict = "error";
+      io.to(socketId).emit("job-failed", { error: error.message });
+    } finally {
+      try {
+        fs.unlinkSync(tempCodeFile);
+      } catch (unlinkError) {
+        console.error(`Error removing temp code file: ${unlinkError.message}`);
+      }
+    }
+
+    await Submission.findByIdAndUpdate(submissionId, { verdict });
+
+    const test = await Test.findById(testId);
+
+    if (!test.submissions.has(enroll)) {
+      test.submissions.set(enroll, new Map());
+    }
+
+    const studentSubmissions = test.submissions.get(enroll);
+
+    if (!studentSubmissions.has(questionId)) {
+      studentSubmissions.set(questionId, {
+        submissions: [],
+        isAccepted: false,
+        numberOfTestCasesPassed: 0,
+      });
+    }
+
+    const questionSubmissions = studentSubmissions.get(questionId);
+    questionSubmissions.submissions.push(submissionId);
+
+    if (questionSubmissions.numberOfTestCasesPassed < numberOfTestCasesPassed) {
+      questionSubmissions.numberOfTestCasesPassed = numberOfTestCasesPassed;
+    }
+
+    if (verdict === "accepted") {
+      questionSubmissions.isAccepted = true;
+    }
+
+    studentSubmissions.set(questionId, questionSubmissions);
+    test.submissions.set(enroll, studentSubmissions);
+
+    // if accepted and this is currently a test then please do save this in the a new db with code file with testid,qid,code , enroll
+    // do not delete the files please
+    // after test is over start a chrone job with request with the test id. :)
+
+    // delete after the job is done using test id the test records and also unlinksync the file with the names
+
+    test.markModified("submissions");
+
+    await test.save();
+  } else {
     for (let i = 0; i < sampleTestCases.length; i++) {
       const { input, output } = sampleTestCases[i];
 
@@ -98,7 +207,6 @@ codeQueue.process(async (job) => {
 
         const actualOutput = stdout.trim();
         const passed = actualOutput === output.trim();
-        passed && numberOfTestCasesPassed++;
 
         const testCaseResult = {
           testCase: i + 1,
@@ -107,9 +215,6 @@ codeQueue.process(async (job) => {
           actualOutput,
           verdict: passed ? "Accepted" : "Wrong Answer",
         };
-
-        if (!passed) verdict = "failed";
-
         io.to(socketId).emit("sample-testcase-result", testCaseResult);
       } catch (error) {
         errorMessage = findError(error);
@@ -120,115 +225,14 @@ codeQueue.process(async (job) => {
           verdict: errorMessage,
         };
 
-        verdict = "failed";
-
         io.to(socketId).emit("sample-testcase-result", testCaseResult);
       } finally {
         fs.unlinkSync(tempInputFile);
       }
     }
 
-    for (let i = 0; i < hiddenTestCases.length; i++) {
-      const { input, output } = hiddenTestCases[i];
-
-      const testFile = crypto.randomUUID();
-      const tempInputFile = path.join(
-        __dirname,
-        `tempInput/${testFile}${i}.txt`
-      );
-
-      fs.writeFileSync(tempInputFile, input);
-
-      const dockerCommand = `docker run --rm --memory=${MEMORY_LIMIT} -v ${tempCodeFile}:/app/Main.${language} -v ${tempInputFile}:/app/input.txt ${dockerImage}`;
-
-      try {
-        const { stdout, stderr } = await execPromise(dockerCommand);
-
-        if (stderr) throw new Error(stderr);
-
-        const actualOutput = stdout.trim();
-        const passed = actualOutput === output.trim();
-        passed && numberOfTestCasesPassed++;
-
-        const testCaseResult = {
-          testCase: i + 1,
-          passed,
-          verdict: passed ? "Accepted" : "Wrong Answer",
-        };
-
-        io.to(socketId).emit("hidden-testcase-result", testCaseResult);
-
-        if (!passed) verdict = "failed";
-      } catch (error) {
-        errorMessage = findError(error);
-
-        const testCaseResult = {
-          testCase: i + 1,
-          passed: false,
-          verdict: errorMessage,
-        };
-
-        io.to(socketId).emit("hidden-testcase-result", testCaseResult);
-
-        verdict = "failed";
-      } finally {
-        fs.unlinkSync(tempInputFile);
-      }
-    }
     io.to(socketId).emit("job-completed", { status: "completed" });
-  } catch (error) {
-    verdict = "error";
-    io.to(socketId).emit("job-failed", { error: error.message });
-  } finally {
-    try {
-      fs.unlinkSync(tempCodeFile);
-    } catch (unlinkError) {
-      console.error(`Error removing temp code file: ${unlinkError.message}`);
-    }
   }
-
-  await Submission.findByIdAndUpdate(submissionId, { verdict });
-
-  const test = await Test.findById(testId);
-
-  if (!test.submissions.has(enroll)) {
-    test.submissions.set(enroll, new Map());
-  }
-
-  const studentSubmissions = test.submissions.get(enroll);
-
-  if (!studentSubmissions.has(questionId)) {
-    studentSubmissions.set(questionId, {
-      submissions: [],
-      isAccepted: false,
-      numberOfTestCasesPassed: 0,
-    });
-  }
-
-  const questionSubmissions = studentSubmissions.get(questionId);
-  questionSubmissions.submissions.push(submissionId);
-
-  if (questionSubmissions.numberOfTestCasesPassed < numberOfTestCasesPassed) {
-    questionSubmissions.numberOfTestCasesPassed = numberOfTestCasesPassed;
-  }
-
-  if (verdict === "accepted") {
-    questionSubmissions.isAccepted = true;
-  }
-
-  studentSubmissions.set(questionId, questionSubmissions);
-  test.submissions.set(enroll, studentSubmissions);
-
-  // if accepted and this is currently a test then please do save this in the a new db with code file with testid,qid,code , enroll
-  // do not delete the files please
-  // after test is over start a chrone job with request with the test id. :)
-
-  // delete after the job is done using test id the test records and also unlinksync the file with the names
-
-  console.log(test.submissions.get(enroll).get(questionId));
-  test.markModified("submissions");
-
-  await test.save();
 });
 
 codeQueue.on("completed", (job) => {

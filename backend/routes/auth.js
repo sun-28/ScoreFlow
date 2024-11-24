@@ -41,6 +41,7 @@ passport.use(
         }
         role = "student";
         profile.role = role;
+        profile._id = student._id;
         return done(null, profile);
       } catch (error) {
         console.error("Error saving user:", error);

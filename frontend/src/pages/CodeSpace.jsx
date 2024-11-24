@@ -7,11 +7,9 @@ import CodeEditor from "../components/CodeEditor";
 import TestCases from "../components/TestCases";
 import ResultModal from "../components/ResultModal";
 import io from "socket.io-client";
-import axios from "axios";
 import axiosInstance from "../util/axiosInstance";
 
 const SOCKET_SERVER_URL = import.meta.env.VITE_SOCKET_SERVER_URL;
-const API_SERVER_URL = import.meta.env.VITE_API_SERVER_URL;
 const socket = io(SOCKET_SERVER_URL);
 
 const CodeSpace = () => {
@@ -33,6 +31,7 @@ const CodeSpace = () => {
       console.log(response.data.question);
       setDetails(response.data.question);
       setTestCases(response.data.question.sampleTestCases);
+      setResults( Array(response.data.question.sampleTestCases.length).fill({}));
     } catch (error) {
       console.error("Error fetching question details:", error);
       toast.error("Failed to load question.");
@@ -48,12 +47,12 @@ const CodeSpace = () => {
       console.log("Connected to WebSocket server");
     });
 
-    socket.on("test-case-result", (data) => {
+    socket.on("sample-testcase-result", (data) => {
+      console.log(data)
       setResults((prevResults) => {
-        const updatedResults = prevResults.map((result) =>
-          result.input === data.input ? data : result
-        );
-        return updatedResults;
+        const newResults = [...prevResults];
+        newResults[data.testCase - 1] = data;
+        return newResults;
       });
     });
 
@@ -64,8 +63,7 @@ const CodeSpace = () => {
     });
 
     socket.on("job-completed", () => {
-      console.log("All test cases completed");
-      toast.success("All test cases completed");
+      toast.success("Run Successful");
       setProcessing(false);
       setShowModal(true);
     });
@@ -77,7 +75,7 @@ const CodeSpace = () => {
     });
 
     return () => {
-      socket.off("test-case-result");
+      socket.off("sample-testcase-result");
       socket.off("job-started");
       socket.off("job-completed");
       socket.off("job-failed");
@@ -92,7 +90,7 @@ const CodeSpace = () => {
     setLanguage(newLanguage);
   };
 
-  const handleCompile = async () => {
+  const handleSubmit = async () => {
     setProcessing(true);
     setJobStarted(false);
     setResults(
@@ -104,13 +102,40 @@ const CodeSpace = () => {
     );
 
     try {
-      const response = await axios.post(`${API_SERVER_URL}/code/submit`, {
+      const response = await axiosInstance.post(`/code/submit`, {
         code,
         language,
-        testCases,
         socketId: socket.id,
+        testId: testid,
+        questionId: quesid,
       });
+      console.log("Server response:", response.data);
+    } catch (error) {
+      console.error("Error submitting code:", error);
+      toast.error("Error submitting code: " + error.message);
+      setProcessing(false);
+    }
+  };
 
+  const handleRun = async () => {
+    setProcessing(true);
+    setJobStarted(false);
+    setResults(
+      testCases.map((testCase) => ({
+        ...testCase,
+        output: "Running...",
+        passed: null,
+      }))
+    );
+
+    try {
+      const response = await axiosInstance.post(`/code/runSampleTestCases`, {
+        code,
+        language,
+        socketId: socket.id,
+        testId: testid,
+        questionId: quesid,
+      });
       console.log("Server response:", response.data);
     } catch (error) {
       console.error("Error submitting code:", error);
@@ -145,7 +170,8 @@ const CodeSpace = () => {
             testid={testid}
           />
           <TestCases
-            handleCompile={handleCompile}
+            handleSubmit={handleSubmit}
+            handleRun={handleRun}
             testCases={testCases}
             setTestCases={setTestCases}
             processing={processing}
