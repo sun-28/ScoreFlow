@@ -1,5 +1,5 @@
 const Test = require('../models/Test')
-
+const Submission = require('../models/Submission')
 const getAllTests = async (req,res)=>{
     try {
 
@@ -64,27 +64,101 @@ const getPlagedRecords = async (req,res) =>{
 }
 
 
+const getStudentSubmissions = async (req, res) => {
+    try {
+            const { testId, enroll, questionId } = req.params;
 
-// incomplete 
+            const test = await Test.findById(testId).exec();
 
-const getQuestionSubmissions =  async (req,res) =>{
-    try { 
+            if (!test) {
+                return res.status(404).json({ error: "Test not found" });
+            }
+            const studentSubmissionsMap = test.submissions.get(enroll);
 
-        const {testid,questionid} = req.params;
+            if (!studentSubmissionsMap) {
+                return res.status(404).json({ error: "No submissions found for the student" });
+            }
+        
+            const submissionEntry = studentSubmissionsMap.get(questionId);
 
-        res.status(200).json(records);
+            if (!submissionEntry) {
+                return res.status(404).json({ error: "No submissions found for the specified question" });
+            }
 
+            const populatedSubmissions = await Submission.find({
+                _id: { $in: submissionEntry.submissions },
+            });
+
+            res.status(200).json(populatedSubmissions);
+        } catch (error) {
+            console.error(error);
+            res.status(500).json({ error: "An error occurred while fetching submissions" });
+        }
+    };
+
+const saveMarks = async (req, res) => {
+    try {
+        const { testId, students } = req.body;
+
+        if (!testId || !students || !Array.isArray(students) || students.length === 0) {
+            return res.status(400).json({
+            error: "testId and students (non-empty array) are required",
+        });
+        }
+        
+        const test = await Test.findById(testId);
+        
+        if (!test) {
+            return res.status(404).json({ error: "Test not found" });
+        }
+
+        students.forEach((student) => {
+        const { enroll, totalMarks, questionWiseMarks } = student;
+        
+        if (!enroll || totalMarks === undefined || !Array.isArray(questionWiseMarks)) {
+            throw new Error(
+                `Invalid data for student: ${JSON.stringify(student)}`
+            );
+        }
+
+        const isValidQuestionMarks = questionWiseMarks.every(
+            (qwm) => qwm.questionId && qwm.marks !== undefined
+        );
+
+        if (!isValidQuestionMarks) {
+            throw new Error(
+                `Invalid question-wise marks for student: ${JSON.stringify(student)}`
+            );
+        }
+        
+        const existingMarksIndex = test.marks.findIndex((mark) => mark.enroll === enroll);
+        
+        if (existingMarksIndex !== -1) {
+            test.marks[existingMarksIndex].questionWiseMarks = questionWiseMarks;
+            test.marks[existingMarksIndex].totalMarks = totalMarks;
+        } else {
+            test.marks.push({
+            enroll,
+            questionWiseMarks,
+            totalMarks,
+            });
+        }
+        });
+
+        await test.save();
+        
+        res.status(200).json({ message: "Marks saved successfully for all students" });
     } catch (error) {
-        console.log(error)
-        res.status(500).send(error.message)
-    }
-}
-
-
-
+            console.error(error);
+            res.status(500).json({
+            error: `An error occurred while saving marks: ${error.message}`,
+            });
+        }
+    };
 module.exports= {
     getAllTests,
     getPlagedRecords,
     getTestById,
-    getQuestionSubmissions
+    getStudentSubmissions,
+    saveMarks
 }
