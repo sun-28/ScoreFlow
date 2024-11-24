@@ -37,6 +37,13 @@ const testSchema = new mongoose.Schema({
     },
     default: {},
   },
+  marks: {
+    type: Map,
+    of: {
+      type: Number,
+    },
+    default: {},
+  },
   isReviewed: { type: Boolean, default: false },
 });
 

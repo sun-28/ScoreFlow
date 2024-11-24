@@ -1,3 +1,6 @@
+const Question = require("../models/Question");
+const Student = require("../models/Student");
+const Submission = require("../models/Submission");
 const Test = require("../models/Test");
 
 const getUnReviewedTests = async (req, res) => {
@@ -6,7 +9,7 @@ const getUnReviewedTests = async (req, res) => {
       startTime: { $lt: new Date() },
       isReviewed: false,
       createdBy: req.user._id,
-    }).select("title startTime");
+    }).select("subject startTime");
     res.status(200).json(tests);
   } catch (error) {
     console.error(error);
@@ -14,19 +17,72 @@ const getUnReviewedTests = async (req, res) => {
   }
 };
 
-const getTestById = async (req, res) => {
+const calcMarks = async (test) => {
+  const submissions = test.submissions;
+  const marks = new Map();
+  for (const [enroll, studentSubmissions] of submissions) {
+    let totalMarks = 0;
+    for (const [questionId, questionSubmission] of studentSubmissions) {
+      const question = test.questions.find((q) => q._id === questionId);
+      const questionMarks = question.marks;
+      const numberOfTestCases = question.numberOfTestCases;
+      const numberOfTestCasesPassed =
+        questionSubmission.numberOfTestCasesPassed;
+      const questionMarksObtained =
+        (numberOfTestCasesPassed / numberOfTestCases) * questionMarks;
+      totalMarks += questionMarksObtained;
+    }
+    marks.set(enroll, { totalMarks });
+  }
+  test.marks = marks;
+  test.markModified("marks");
+  await test.save();
+  return marks;
+};
+
+const getDetailsByTestId = async (req, res) => {
   try {
     const { testid } = req.params;
-
-    const test = await Test.findById(testid).select(
-      "-submissions -plagarismRecords"
-    );
+    const test = await Test.findById(testid).select("subject submissions");
 
     if (!test) {
       return res.status(404).send("Test not found");
     }
-
-    res.status(200).json(test);
+    const marks = calcMarks(test);
+    const result = [];
+    const submissions = test.submissions;
+    for (const [enroll, studentSubmissions] of submissions) {
+      const student = await Student.findOne({ enroll }).select("displayName");
+      const studentName = student.displayName;
+      const studentMarks = marks.get(enroll);
+      const studentResult = {
+        enroll,
+        studentName,
+        totalMarks: studentMarks,
+        questions: [],
+      };
+      for (const [questionId, questionSubmission] of studentSubmissions) {
+        const question = await Question.findById(questionId).select(
+          "title numberOfTestCases"
+        );
+        const questionName = question.title;
+        const numberOfTestCases = question.numberOfTestCases;
+        const { code } = await Submission.findById(
+          questionSubmission.submissions[
+            questionSubmission.submissions.length - 1
+          ]
+        ).select("code");
+        const questionResult = {
+          questionName,
+          numberOfTestCases,
+          numberOfTestCasesPassed: questionSubmission.numberOfTestCasesPassed,
+          code,
+        };
+        studentResult.questions.push(questionResult);
+      }
+      result.push(studentResult);
+    }
+    res.status(200).json(result);
   } catch (error) {
     console.log(error);
     res.status(500).send(error.message);
@@ -175,8 +231,8 @@ const saveMarks = async (req, res) => {
 
 module.exports = {
   getUnReviewedTests,
+  getDetailsByTestId,
   getPlagedRecords,
-  getTestById,
   getStudentSubmissions,
   saveMarks,
 };
