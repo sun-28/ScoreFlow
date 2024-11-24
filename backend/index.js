@@ -42,7 +42,7 @@ app.use("/code", require("./routes/submission"));
 app.use("/test", require("./routes/test"));
 app.use("/ques", require("./routes/question"));
 app.use("/auth", require("./routes/auth"));
-app.use("/result", require("./routes/result"));
+app.use("/review", require("./routes/review"));
 
 
 app.get("/", (req, res) => {
