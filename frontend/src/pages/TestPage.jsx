@@ -54,13 +54,13 @@ const TestPage = () => {
   };
 
   const isAllTestCasesPassed = (questionId) => {
-    const studentSubmissions = testDetails?.submissions[currUser.enroll] || {};
+    const studentSubmissions = testDetails?.submissions[currUser?.name?.familyName] || {};
     const questionSubmission = studentSubmissions[questionId];
     return questionSubmission?.isAccepted === true;
   };
 
   const getTestCaseRatio = (questionId) => {
-    const studentSubmissions = testDetails?.submissions[currUser.enroll] || {};
+    const studentSubmissions = testDetails?.submissions[currUser?.name?.familyName] || {};
     const questionSubmission = studentSubmissions[questionId];
     const numberOfTestCasesPassed =
       questionSubmission?.numberOfTestCasesPassed || 0;
@@ -96,7 +96,7 @@ const TestPage = () => {
           <div
             key={question._id}
             className={`p-4 ${
-              isAllTestCasesPassed() ? "bg-green-200" : "bg-white"
+              isAllTestCasesPassed(question._id) ? "bg-green-200" : "bg-white"
             } shadow rounded flex justify-between items-center hover:bg-gray-100 cursor-pointer`}
             onClick={() => navigate(`/test/${testid}/ques/${question._id}`)}
           >
