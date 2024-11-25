@@ -1,8 +1,5 @@
 const express = require("express");
 const {
-  saveMarks,
-  getStudentSubmissions,
-  getPlagedRecords,
   getUnReviewedTests,
   getDetailsByTestId,
   completeReview,

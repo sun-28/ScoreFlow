@@ -23,6 +23,9 @@ const submissionSchema = new Schema({
     type: String,
     require: true,
   },
-
+  path: {
+    type: String,
+    require: true,
+  },
 });
 module.exports = mongoose.model("Submissions", submissionSchema);

@@ -5,7 +5,6 @@ const submissionEntrySchema = new mongoose.Schema({
   isAccepted: { type: Boolean, default: false },
   numberOfTestCasesPassed: { type: Number, default: 0 },
   marks: { type: Number, default: 0 },
-  plag: [{ type: String, default: [] }],
 });
 
 const testSchema = new mongoose.Schema({
