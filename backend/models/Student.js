@@ -27,7 +27,7 @@ const studentSchema = new Schema({
         type: Schema.Types.ObjectId,
         ref: "Tests",
       },
-      score: {
+      marks: {
         type: Number,
       },
     },

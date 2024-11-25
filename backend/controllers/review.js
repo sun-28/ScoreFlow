@@ -97,12 +97,33 @@ const getDetailsByTestId = async (req, res) => {
 const completeReview = async (req, res) => {
   try {
     const { testId, adjustedMarks } = req.body;
+
     if (!testId || !adjustedMarks) {
       return res.status(400).json({
         error: "testId and adjustedMarks are required",
       });
     }
-    const test = await Test.findByIdAndUpdate(testId, {
+    const enrollKeys = Object.keys(adjustedMarks);
+
+    console.log("Enrollments to update:", enrollKeys);
+
+    const students = await Student.find({ enroll: { $in: enrollKeys } });
+
+    const bulkOperations = students.map((student) => {
+      const enroll = student.enroll;
+      const marks = adjustedMarks[enroll];
+      student.testScores.push({ test: testId, marks });
+      return {
+        updateOne: {
+          filter: { _id: student._id },
+          update: { $set: { testScores: student.testScores } },
+        },
+      };
+    });
+    if (bulkOperations.length > 0) {
+      await Student.bulkWrite(bulkOperations);
+    }
+    await Test.findByIdAndUpdate(testId, {
       marks: adjustedMarks,
       isReviewed: true,
     });
@@ -261,5 +282,5 @@ module.exports = {
   getPlagedRecords,
   getStudentSubmissions,
   saveMarks,
-  completeReview
+  completeReview,
 };
