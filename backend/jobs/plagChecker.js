@@ -3,6 +3,7 @@ const Agenda = require('agenda');
 const mongoose = require('mongoose');
 const { execSync } = require('child_process');
 const TestModel = require('../models/Test'); 
+const {compareFiles} = require('./compareFiles')
 const PlagModel = require('../models/Plag'); 
 const dotenv = require("dotenv");
 dotenv.config();
@@ -37,21 +38,6 @@ agenda.define("check plagiarism for test", async (job) => {
   const { testId } = job.attrs.data;
   console.log(`Checking plagiarism for test ID: ${testId}`);
 
-  const getLanguage = (filePath) => {
-    const extension = filePath.split(".").pop();
-    switch (extension) {
-      case "java":
-        return "java";
-      case "cpp":
-      case "c":
-        return "c/c++";
-      case "py":
-        return "python3";
-      default:
-        throw new Error("Unsupported language");
-    }
-  };
-
   try {
     const testRecords = await PlagModel.find({ testId });
     const language = "";
@@ -70,16 +56,9 @@ agenda.define("check plagiarism for test", async (job) => {
             const file1 = records[i].codeFile;
             const file2 = records[j].codeFile;
 
-            if (language === "") {
-              language = getLanguage(file1);
-            }
+            
+            const plagiarismScore = compareFiles(file1,file2);
 
-            const result = execSync(
-              `java -jar jplag.jar -l ${language} -s ${file1} ${file2} -r /path/to/result`
-            );
-
-            const match = result.toString().match(/Plagiarism:\s+(\d+)%/);
-            const plagiarismScore = match ? parseInt(match[1], 10) : 0;
 
             if (plagiarismScore > 75) {
               
