@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import axiosInstance from "../util/axiosInstance";
 import { toast } from "react-toastify";
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 
 
 const ReviewTestPage = () => {
@@ -11,6 +11,8 @@ const ReviewTestPage = () => {
   const [selectedStudent, setSelectedStudent] = useState(null);
   const [maxMarks, setMaxMarks] = useState(0);
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchTestData = async () => {
@@ -33,12 +35,13 @@ const ReviewTestPage = () => {
   }, [testid]);
 
   const handleMarksChange = (enroll, increment) => {
-    if (adjustedMarks[enroll] === 0 && !increment) return;
-    if (adjustedMarks[enroll] === maxMarks && increment) return;
-    setAdjustedMarks((prevMarks) => ({
-      ...prevMarks,
-      [enroll]: prevMarks[enroll] + (increment ? 1 : -1),
-    }));
+    setAdjustedMarks((prevMarks) => {
+      const newMarks = prevMarks[enroll] + (increment ? 0.5 : -0.5);
+      return {
+        ...prevMarks,
+        [enroll]: Math.min(maxMarks, Math.max(0, newMarks)),
+      };
+    });
   };
 
   const openDetailsModal = (student) => {
@@ -56,6 +59,7 @@ const ReviewTestPage = () => {
       const response = await axiosInstance.post("/review/complete", payload);
       console.log("Review completed successfully:", response.data);
       toast.success("Test review completed successfully!");
+      navigate("/tests");
     } catch (error) {
       console.error("Error completing test review:", error);
       toast.error("Failed to complete test review. Please try again.");
@@ -131,7 +135,9 @@ const ReviewTestPage = () => {
 
       {selectedStudent && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center">
-          <div className="bg-white rounded-md p-6 w-3/4">
+          <div className="bg-white rounded-md p-6 w-3/4  overflow-y-auto"
+          style={{ maxHeight: "calc(100vh - 3rem)" }}
+          >
             <h2 className="text-xl font-bold mb-4">
               Details for {selectedStudent.studentName}
             </h2>

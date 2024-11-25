@@ -1,4 +1,4 @@
-import React, { useContext, useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import userContext from "../context/user/userContext";
 import axiosInstance from "../util/axiosInstance";
@@ -17,6 +17,13 @@ const Navbar = () => {
       "connect.sid=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
   };
 
+  useEffect(() => {
+    // Preload images
+    currUser?.photos.forEach((photo) => {
+      new Image().src = photo.value;
+    });
+  }, [currUser]);
+
   const getFirstName = (fullName) => {
     return fullName?.split(" ")[0] || "";
   };
@@ -30,7 +37,7 @@ const Navbar = () => {
       {currUser && (
         <div className="relative flex items-center space-x-2">
           <img
-            src={currUser.photos[0].value}
+            src={currUser.photos[0]?.value}
             alt="Profile"
             className="w-8 h-8 rounded-full cursor-pointer"
             onClick={() => setIsDropdownOpen((prev) => !prev)}
@@ -56,6 +63,15 @@ const Navbar = () => {
                   Go to Profile
                 </button>
               )}
+              <button
+                className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                onClick={() => {
+                  navigate("/tests");
+                  setIsDropdownOpen(false);
+                }}
+              >
+                Home
+              </button>
               <button
                 className="block w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-gray-100"
                 onClick={handleLogout}

@@ -32,7 +32,7 @@ const calcMarks = async (test) => {
         questionSubmission.numberOfTestCasesPassed;
       const questionMarksObtained =
         (numberOfTestCasesPassed / numberOfTestCases) * questionMarks;
-      totalMarks += questionMarksObtained;
+      totalMarks += Math.round(questionMarksObtained * 2) / 2;
     }
     marks.set(enroll, totalMarks);
   }

@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { toast } from "react-toastify";
 import axiosInstance from "../util/axiosInstance";
+import { useNavigate } from "react-router-dom";
 
 const AddQues = () => {
   const [formData, setFormData] = useState({
@@ -13,6 +14,7 @@ const AddQues = () => {
     sampleTestCases: [{ input: "", output: "", explanation: "" }],
     hiddenTestCases: [{ input: "", output: "" }],
   });
+  const navigate = useNavigate();
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -39,7 +41,6 @@ const AddQues = () => {
       const response = await axiosInstance.post("/ques/create", formData);
       console.log("Question added:", response.data);
       toast.success("Question added successfully!");
-      // Optionally reset form
       setFormData({
         title: "",
         problemStatement: "",
@@ -50,6 +51,7 @@ const AddQues = () => {
         sampleTestCases: [{ input: "", output: "", explanation: "" }],
         hiddenTestCases: [{ input: "", output: "" }],
       });
+      navigate("/tests");
     } catch (error) {
       console.error("Error adding question:", error);
       toast.error("Failed to add question. Please try again.");

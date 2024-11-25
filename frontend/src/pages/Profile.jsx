@@ -1,5 +1,4 @@
 import React, { useContext, useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
 import userContex from "../context/user/userContext";
 import axiosInstance from "../util/axiosInstance";
 
@@ -14,6 +13,7 @@ const StudentProfile = () => {
     const fetchStudentData = async () => {
       try {
         const response = await axiosInstance.get(`/user/profile/${currUser._id}`);
+        new Image().src = response.data.photo; // preloading image
         setStudentData(response.data);
         setLoading(false);
       } catch (err) {
@@ -33,7 +33,7 @@ const StudentProfile = () => {
       <div className="bg-white shadow-md rounded-md p-6 max-w-3xl mx-auto">
         <div className="flex items-center mb-6">
           <img
-            src={studentData.photo || "/default-avatar.png"}
+            src={studentData.photo}
             alt="Profile"
             className="w-24 h-24 rounded-full border-2 border-gray-300 mr-6"
           />

@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import axiosInstance from "../util/axiosInstance";
 import { toast } from "react-toastify";
+import { useNavigate } from "react-router-dom";
 
 const AddTest = () => {
   const [formData, setFormData] = useState({
@@ -15,6 +16,8 @@ const AddTest = () => {
   });
   const [questions, setQuestions] = useState([]);
   const [loading, setLoading] = useState(true);
+
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchQuestions = async () => {
@@ -66,9 +69,12 @@ const AddTest = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setFormData({ ...formData, numberOfQuestions: formData.questions.length });
+    const updatedFormData = {
+      ...formData,
+      numberOfQuestions: formData.questions.length,
+    };
     try {
-      await axiosInstance.post("/test/create", formData);
+      await axiosInstance.post("/test/create", updatedFormData);
       toast.success("Test added successfully!");
       setFormData({
         subject: "",
@@ -79,6 +85,8 @@ const AddTest = () => {
         semester: "",
         batches: [],
       });
+      navigate("/tests");
+
     } catch (error) {
       console.error("Error adding test:", error);
     }
