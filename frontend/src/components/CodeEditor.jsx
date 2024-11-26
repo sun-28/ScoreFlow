@@ -13,34 +13,31 @@ const CodeEditor = ({ code, onChange, language, onLanguageChange, testid }) => {
 
   const navigate = useNavigate();
   const [timeRemaining, setTimeRemaining] = useState(null);
+  const [editorInstance, setEditorInstance] = useState(null);
+  const [previousContent, setPreviousContent] = useState("");
 
   const fetchTimeRemaining = async () => {
     try {
       const response = await axiosInstance.get(`/test/remainingTime/${testid}`);
-      console.log(response.data.timeRemaining);
       setTimeRemaining(response.data.timeRemaining);
     } catch (err) {
       console.error("Error fetching time remaining:", err);
     }
   };
+
   const formatTime = (time) => {
     const hours = Math.floor(time / 3600000);
     const minutes = Math.floor((time % 3600000) / 60000);
     const seconds = Math.floor((time % 60000) / 1000);
     const pad = (num) => (num < 10 ? `0${num}` : num);
     return `${hours > 0 ? `${hours}:` : ""}${pad(minutes)}:${pad(seconds)}`;
-
   };
+
   useEffect(() => {
     fetchTimeRemaining();
   }, [testid]);
 
   useEffect(() => {
-    // if (timeRemaining <= 0) {
-    //   navigate("/tests");
-    //   return;
-    // }
-
     const interval = setInterval(() => {
       setTimeRemaining((prevTime) => Math.max(prevTime - 1000, 0));
     }, 1000);
@@ -52,7 +49,40 @@ const CodeEditor = ({ code, onChange, language, onLanguageChange, testid }) => {
     onChange(defaultCode[language] || "");
   }, [language]);
 
+  const handleEditorDidMount = (editor, monaco) => {
+    setEditorInstance(editor);
+    setPreviousContent(editor.getValue());
+
+    editor.onKeyDown((e) => {
+      if (e.code === "KeyV" && (e.ctrlKey || e.metaKey)) {
+        e.preventDefault();
+        navigator.clipboard
+          .readText()
+          .then((clipboardText) => {
+            const currentContent = editor.getValue();
+
+            if (currentContent.includes(clipboardText)) {
+              const selection = editor.getSelection();
+              editor.executeEdits("paste", [
+                {
+                  range: selection,
+                  text: clipboardText,
+                  forceMoveMarkers: true,
+                },
+              ]);
+            } else {
+              alert("Pasting from external sources is not allowed!");
+            }
+          })
+          .catch((err) => {
+            alert("Pasting from external sources is not allowed!");
+          });
+      }
+    });
+  };
+
   const handleEditorChange = (value) => {
+    setPreviousContent(value);
     onChange(value);
   };
 
@@ -61,7 +91,7 @@ const CodeEditor = ({ code, onChange, language, onLanguageChange, testid }) => {
   };
 
   return (
-    <div className="editor-container ">
+    <div className="editor-container">
       <div className="code-editor-heading p-1 flex items-center justify-between mb-1">
         <select
           value={language}
@@ -74,27 +104,26 @@ const CodeEditor = ({ code, onChange, language, onLanguageChange, testid }) => {
           <option value="java">Java</option>
         </select>
         <div className="flex gap-1">
-          <div className=" w-24 flex gap-2 items-center p-1 border border-gray-800 rounded-md bg-gray-100 shadow-s ">
+          <div className="w-24 flex gap-2 items-center p-1 border border-gray-800 rounded-md bg-gray-100 shadow-s">
             <svg
               xmlns="http://www.w3.org/2000/svg"
               fill="none"
               viewBox="0 0 24 24"
-              stroke-width="1.5"
+              strokeWidth="1.5"
               stroke="currentColor"
-              class="size-6"
+              className="size-6"
             >
               <path
-                stroke-linecap="round"
-                stroke-linejoin="round"
+                strokeLinecap="round"
+                strokeLinejoin="round"
                 d="M12 6v6h4.5m4.5 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"
               />
             </svg>
-
             {timeRemaining > 0 ? formatTime(timeRemaining) : "Time's up!"}
           </div>
           <Link
             to={`/test/${testid}`}
-            className="p-1 border border-gray-800 rounded-md bg-gray-100 shadow-sm hover:bg-slate-700 hover:text-white "
+            className="p-1 border border-gray-800 rounded-md bg-gray-100 shadow-sm hover:bg-slate-700 hover:text-white"
           >
             <svg
               xmlns="http://www.w3.org/2000/svg"
@@ -119,6 +148,7 @@ const CodeEditor = ({ code, onChange, language, onLanguageChange, testid }) => {
         language={language}
         value={code}
         onChange={handleEditorChange}
+        onMount={handleEditorDidMount}
       />
     </div>
   );

@@ -2,7 +2,7 @@ import React from "react";
 
 function ProblemDescription({ details }) {
   return (
-    <div className="h-[90vh] border-2 border-white bg-white rounded-md p-4 overflow-y-scroll">
+    <div className="select-none h-[90vh] border-2 border-white bg-white rounded-md p-4 overflow-y-scroll">
       <div className="text-xs font-semibold mb-2 border-b border-gray-200 pb-2">
         Description
       </div>
