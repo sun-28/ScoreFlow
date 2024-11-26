@@ -115,9 +115,57 @@ const getTimeRemaining = async (req, res) => {
   }
 };
 
+const updateTest = async (req, res) => {
+  const { id } = req.params;
+  const { updates } = req.body; // `updates` contains all the fields to update
+
+  if (!updates || typeof updates !== "object") {
+    return res.status(400).json({ message: "Updates object is required" });
+  }
+
+  try {
+    const test = await Test.findById(id);
+    if (!test) {
+      return res.status(404).json({ message: "Test not found" });
+    }
+
+    for (const [fieldName, data] of Object.entries(updates)) {
+      if (fieldName === "submissions") {
+        for (const [studentId, submissionData] of Object.entries(data)) {
+          if (!test.submissions.has(studentId)) {
+            test.submissions.set(studentId, new Map());
+          }
+          for (const [questionId, submissionEntry] of Object.entries(submissionData)) {
+            test.submissions.get(studentId).set(questionId, submissionEntry);
+          }
+        }
+      } else if (fieldName === "marks") {
+        for (const [studentId, marks] of Object.entries(data)) {
+          test.marks.set(studentId, marks);
+        }
+      } else if (fieldName === "plagiarismRecords") {
+        test.plagiarismRecords.push(...data);
+      } else {
+        return res.status(400).json({ message: `Field '${fieldName}' is not editable` });
+      }
+    }
+
+    await test.save();
+
+    res.json({ message: "Test updated successfully", test });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "An error occurred", error: error.message });
+  }
+};
+
+
+
+
 module.exports = {
   createTest,
   getTests,
   getTestById,
   getTimeRemaining,
+  updateTest,
 };
