@@ -3,7 +3,7 @@ const PlagModel = require('../models/Plag');
 const { compareFiles } = require('./compareFiles'); 
 const dotenv = require("dotenv");
 dotenv.config(); 
-const plagCheck = async (testid) => {
+const plagCheck = async (req,res) => {
   try {
     const testRecords = await PlagModel.find({ testId : testid });
     let arr = [];
