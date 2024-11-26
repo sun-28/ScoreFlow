@@ -9,8 +9,6 @@ function preprocessCode(code) {
     return code.split(/\s+/); 
 }
 
-
-
 function calculateFingerprinting(tokens, chunkSize = 5) {
     const fingerprints = [];
     for (let i = 0; i <= tokens.length - chunkSize; i++) {
@@ -111,8 +109,6 @@ function getFrequency(tokens) {
     }, {});
 }
 
-
-
 function preprocessCode(code) {
     code = code.replace(/\/\*[\s\S]*?\*\/|\/\/.*/g, ''); 
     code = code.replace(/\s+/g, ' ').trim(); 
@@ -200,6 +196,5 @@ function compareFiles(file1Path, file2Path) {
 
     return averageSimilarity;
 }
-
 
 module.exports = { compareFiles };
