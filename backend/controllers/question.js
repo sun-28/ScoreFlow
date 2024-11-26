@@ -1,6 +1,23 @@
 const Question = require("../models/Question");
 const Test = require("../models/Test");
 
+
+const getAllQuestions = async (req, res) => {
+  try {
+     console.log('here')
+    const questions = await Question.find({});
+
+    if (!questions.length) {
+      return res.status(404).json({ message: "No questions found" });
+    }
+
+    res.json({ message: "Questions retrieved successfully", questions });
+  } catch (err) {
+    res.status(500).send(err.message);
+  }
+};
+
+
 const createQuestion = async (req, res) => {
   const {
     title,
@@ -94,9 +111,12 @@ const getQuestion = async (req, res) => {
   }
 };
 
+
+
 module.exports = {
   createQuestion,
   updateQuestion,
   getQuestions,
   getQuestion,
+  getAllQuestions,
 };
