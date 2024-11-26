@@ -31,7 +31,6 @@ const CodeSpace = () => {
       const response = await axiosInstance.get(
         `/ques/${quesid}?testid=${testid}`
       );
-      console.log(response.data.question);
       setDetails(response.data.question);
       setTestCases(response.data.question.sampleTestCases);
       setRunResults(

@@ -8,7 +8,7 @@ const CodeEditor = ({ code, onChange, language, onLanguageChange, testid }) => {
     javascript: `// JavaScript Code Here\n\n// Write your code here`,
     cpp: `// C++ Code Here\n#include <iostream>\nusing namespace std;\n\nint main() {\n  // Write your code here\n  return 0;\n}`,
     python: `# Python Code Here\n\n# Write your code here\n\nif __name__ == "__main__":\n    pass`,
-    java: `// Java Code Here\npublic class Main {\n  public static void main(String[] args) {\n    // Write your code here\n  }\n}`,
+    java: `// Java Code Here\nimport java.util.Scanner;\n\npublic class Main {\n  public static void main(String[] args) {\n    // Write your code here\n    Scanner myObj = new Scanner(System.in);\n    System.out.println("Hello World");\n}\n}`,
   };
 
   const navigate = useNavigate();
