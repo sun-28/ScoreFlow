@@ -3,7 +3,6 @@ import axiosInstance from "../util/axiosInstance";
 import { toast } from "react-toastify";
 import { useNavigate, useParams } from "react-router-dom";
 
-
 const ReviewTestPage = () => {
   const { testid } = useParams();
   const [testData, setTestData] = useState([]);
@@ -11,14 +10,25 @@ const ReviewTestPage = () => {
   const [selectedStudent, setSelectedStudent] = useState(null);
   const [maxMarks, setMaxMarks] = useState(0);
   const [isSubmitting, setIsSubmitting] = useState(false);
-
+  const [plag, setPlag] = useState(null);
   const navigate = useNavigate();
+
+  const checkPlagiarism = async () => {
+    try {
+      const response = await axiosInstance.get(`/plag/${testid}`);
+      setPlag(response.data.detectedPlagiarism);
+      console.log(response.data.detectedPlagiarism);
+    } catch (err) {
+      console.error("Error checking plagiarism:", err);
+      toast.error("Failed to check plagiarism. Please try again.");
+    }
+  };
 
   useEffect(() => {
     const fetchTestData = async () => {
       try {
         const response = await axiosInstance.get(`/review/test/${testid}`);
-        console.log(response.data);
+
         setMaxMarks(response.data.maxMarks);
         setTestData(response.data.result);
         const initialMarks = {};
@@ -57,7 +67,6 @@ const ReviewTestPage = () => {
     try {
       const payload = { testId: testid, adjustedMarks };
       const response = await axiosInstance.post("/review/complete", payload);
-      console.log("Review completed successfully:", response.data);
       toast.success("Test review completed successfully!");
       navigate("/tests");
     } catch (error) {
@@ -70,7 +79,15 @@ const ReviewTestPage = () => {
 
   return (
     <div className="min-h-screen bg-gray-100 p-8">
-      <h1 className="text-2xl font-bold mb-6">Review Test</h1>
+      <div className="flex justify-between items-center mr-2">
+        <h1 className="text-2xl font-bold mb-6">Review Test</h1>
+        <button
+          onClick={checkPlagiarism}
+          className="p-1 text-white border border-gray-800 rounded-md bg-gray-800 shadow-sm hover:bg-slate-300 hover:text-black "
+        >
+          Check Plagiarism
+        </button>
+      </div>
       <div className="overflow-x-auto bg-white shadow-md rounded-md p-4">
         <table className="w-full text-left border-collapse">
           <thead>
@@ -78,6 +95,7 @@ const ReviewTestPage = () => {
               <th className="border-b p-4">Enroll</th>
               <th className="border-b p-4">Name</th>
               <th className="border-b p-4">Marks</th>
+              <th className="border-b p-4">Plag Record</th>
               <th className="border-b p-4">Details</th>
               <th className="border-b p-4">Give Marks</th>
             </tr>
@@ -88,6 +106,18 @@ const ReviewTestPage = () => {
                 <td className="border-b p-4">{student.enroll}</td>
                 <td className="border-b p-4">{student.studentName}</td>
                 <td className="border-b p-4">{student.totalMarks}</td>
+                <td className="border-b p-4">
+                  {plag == null
+                    ? "Run Plag Check"
+                    : plag[student.enroll]?.map((plagStudent, idx) => {
+                        return (
+                          <div key={idx}>
+                            Q {plagStudent.question} - {plagStudent.student} -{" "}
+                            {Math.round(plagStudent.plagiarismScore * 100)}%
+                          </div>
+                        );
+                      })}
+                </td>
                 <td className="border-b p-4">
                   <button
                     className="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600"
@@ -124,7 +154,9 @@ const ReviewTestPage = () => {
       <div className="mt-6 flex justify-end">
         <button
           className={`bg-green-600 text-white px-6 py-2 rounded-md ${
-            isSubmitting ? "opacity-50 cursor-not-allowed" : "hover:bg-green-700"
+            isSubmitting
+              ? "opacity-50 cursor-not-allowed"
+              : "hover:bg-green-700"
           }`}
           onClick={handleCompleteReview}
           disabled={isSubmitting}
@@ -135,8 +167,9 @@ const ReviewTestPage = () => {
 
       {selectedStudent && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center">
-          <div className="bg-white rounded-md p-6 w-3/4  overflow-y-auto"
-          style={{ maxHeight: "calc(100vh - 3rem)" }}
+          <div
+            className="bg-white rounded-md p-6 w-3/4  overflow-y-auto"
+            style={{ maxHeight: "calc(100vh - 3rem)" }}
           >
             <h2 className="text-xl font-bold mb-4">
               Details for {selectedStudent.studentName}
