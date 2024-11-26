@@ -14,7 +14,7 @@ import SideBar from "./components/SideBar";
 import userContext from "./context/user/userContext";
 import CodeSpace from "./pages/CodeSpace";
 import Profile from "./pages/Profile";
-import Questions from "./pages/Questions";
+import QuestionsList from "./pages/QuestionsList";
 import ReviewTests from "./pages/ReviewTests";
 import TestReview from "./pages/TestReview";
 
@@ -86,7 +86,8 @@ const App = () => {
                 <ProtectedRoute
                   element={<CodeSpace />}
                   roles={["student", "teacher"]}
-                />}
+                />
+              }
             />
             <Route
               exact
@@ -99,7 +100,10 @@ const App = () => {
               exact
               path="/questions"
               element={
-                <ProtectedRoute element={<Questions />} roles={["teacher"]} />
+                <ProtectedRoute
+                  element={<QuestionsList />}
+                  roles={["teacher"]}
+                />
               }
             />
             <Route

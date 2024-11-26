@@ -1,10 +1,8 @@
 const Question = require("../models/Question");
 const Test = require("../models/Test");
 
-
 const getAllQuestions = async (req, res) => {
   try {
-     console.log('here')
     const questions = await Question.find({});
 
     if (!questions.length) {
@@ -16,7 +14,6 @@ const getAllQuestions = async (req, res) => {
     res.status(500).send(err.message);
   }
 };
-
 
 const createQuestion = async (req, res) => {
   const {
@@ -110,8 +107,6 @@ const getQuestion = async (req, res) => {
     res.status(500).send(error.message);
   }
 };
-
-
 
 module.exports = {
   createQuestion,
