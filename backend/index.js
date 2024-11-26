@@ -44,7 +44,7 @@ app.use("/ques", require("./routes/question"));
 app.use("/auth", require("./routes/auth"));
 app.use("/user", require("./routes/user"));
 app.use("/review", require("./routes/review"));
-app.use("/", require("./routes/plag"));
+app.use("/plag", require("./routes/plag"));
 
 app.get("/", (req, res) => {
   return res.send("Server Healthy!");

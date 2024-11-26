@@ -1,60 +1,14 @@
-
-const Agenda = require('agenda');
-const mongoose = require('mongoose');
-const { execSync } = require('child_process');
 const TestModel = require('../models/Test'); 
 const PlagModel = require('../models/Plag'); 
+const { compareFiles } = require('./compareFiles'); 
 const dotenv = require("dotenv");
-dotenv.config();
-
-const URI = process.env.MONGO_URI;
-
-mongoose.connect(URI, {
-  useNewUrlParser: true,
-  useUnifiedTopology: true,
-});
-
-const db = mongoose.connection;
-db.on("error", console.error.bind(console, "connection error:"));
-db.once("open", () => {
-  console.log("Connected to MongoDB");
-});
-
-/* const agenda = new Agenda({ db: { address: `${URI}` } });
- */
-
-const agenda = new Agenda({
-  db: {
-    address: `${URI}agenda`,
-    collection: "agendaJobs",
-    options: {
-      useUnifiedTopology: true,
-    },
-  },
-});
-
-agenda.define("check plagiarism for test", async (job) => {
-  const { testId } = job.attrs.data;
-  console.log(`Checking plagiarism for test ID: ${testId}`);
-
-  const getLanguage = (filePath) => {
-    const extension = filePath.split(".").pop();
-    switch (extension) {
-      case "java":
-        return "java";
-      case "cpp":
-      case "c":
-        return "c/c++";
-      case "py":
-        return "python3";
-      default:
-        throw new Error("Unsupported language");
-    }
-  };
-
+dotenv.config(); 
+const plagCheck = async (req,res) => {
   try {
-    const testRecords = await PlagModel.find({ testId });
-    const language = "";
+    const testRecords = await PlagModel.find({ testId : testid });
+    let arr = [];
+    
+
     const groupedByQuestion = testRecords.reduce((acc, record) => {
       acc[record.questionId] = acc[record.questionId] || [];
       acc[record.questionId].push(record);
@@ -66,41 +20,21 @@ agenda.define("check plagiarism for test", async (job) => {
 
       for (let i = 0; i < records.length; i++) {
         for (let j = i + 1; j < records.length; j++) {
-          if (records[i].enroll !== records[j].enroll) {
-            const file1 = records[i].codeFile;
-            const file2 = records[j].codeFile;
+          if (records[i].enroll !== records[j].enroll) { 
+            const file1 = records[i].codeFile;  
+            const file2 = records[j].codeFile;  
+            const plagiarismScore = compareFiles(file1, file2);
 
-            if (language === "") {
-              language = getLanguage(file1);
-            }
-
-            const result = execSync(
-              `java -jar jplag.jar -l ${language} -s ${file1} ${file2} -r /path/to/result`
-            );
-
-            const match = result.toString().match(/Plagiarism:\s+(\d+)%/);
-            const plagiarismScore = match ? parseInt(match[1], 10) : 0;
-
+          
             if (plagiarismScore > 75) {
-              
-              const test = await TestModel.findById(testId); 
-            
-              if (test) {
-                
-                test.plagiarismRecords.push({
+                arr.push({
                   questionId,
                   student1: records[i].enroll,
                   student2: records[j].enroll,
                   plagiarismScore,
                 });
-            
-
-                await test.save();
-              } else {
-                console.error(`Test with ID ${testId} not found.`);
-              }
               console.log(
-                `Plagiarism detected! Test: ${testId}, Question: ${questionId}, Students: ${records[i].enroll}, ${records[j].enroll}`
+                `Plagiarism detected! Test: ${testid}, Question: ${questionId}, Students: ${records[i].enroll}, ${records[j].enroll}`
               );
             }
           }
@@ -109,24 +43,26 @@ agenda.define("check plagiarism for test", async (job) => {
     }
 
 
-    // delete all the code files if all the records have been checked 
+    const test = await TestModel.findById(testid);
+
+    if(test){
+    test.plagiarismRecords.push(...arr);
+    await test.save(); 
+    }
+
+    console.log(`Plagiarism check completed for test ${testid}`);
+    console.log(`Detected ${arr.length} plagiarism entries.`);
+
+    await PlagModel.deleteMany({ testId: testid });
+    console.log(`All plagiarism records for test ${testId} have been deleted.`);
+
+  
+    console.log(`Plagiarism Check Completed for test ${testid}`);
+    
   } catch (error) {
     console.error("Error during plagiarism check:", error);
   }
-});
+};
 
-(async () => {
-  await agenda.start();
-  console.log("Agenda started");
-})();
 
-async function onTestEnd(testId) {
-  try {
-    console.log(`Scheduling plagiarism check for test ID: ${testId}`);
-    await agenda.now("check plagiarism for test", { testId });
-  } catch (error) {
-    console.error("Error scheduling plagiarism job:", error);
-  }
-}
-
-onTestEnd("test123");
+module.exports = { plagCheck };

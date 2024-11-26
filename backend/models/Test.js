@@ -7,6 +7,13 @@ const submissionEntrySchema = new mongoose.Schema({
   marks: { type: Number, default: 0 },
 });
 
+const plagiarismEntrySchema = new mongoose.Schema({
+  questionId: { type: mongoose.Schema.Types.ObjectId, ref: "Questions", required: true },
+  student1: { type: String, required: true },
+  student2: { type: String, required: true },
+  plagiarismScore: { type: Number, required: true },
+});
+
 const testSchema = new mongoose.Schema({
   testName: { type: String },
   subject: { type: String, required: true },
@@ -43,6 +50,7 @@ const testSchema = new mongoose.Schema({
     },
     default: {},
   },
+  plagiarismRecords: [plagiarismEntrySchema],
   isReviewed: { type: Boolean, default: false },
 });
 
