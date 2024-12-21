@@ -17,12 +17,13 @@ import Profile from "./pages/Profile";
 import QuestionsList from "./pages/QuestionsList";
 import ReviewTests from "./pages/ReviewTests";
 import TestReview from "./pages/TestReview";
+import Navbar2 from "./components/Navbar2";
 
 const App = () => {
   const location = useLocation();
   const { currUser } = useContext(userContext);
 
-  const hide = ["/auth"];
+  const hide = ["/auth","/"];
   const isStudent = currUser?.role === "student";
 
   return (
@@ -36,13 +37,7 @@ const App = () => {
         <div className="main flex-1">
           <Routes>
             <Route exact path="/auth" element={<Auth />} />
-            <Route
-              exact
-              path="/home"
-              element={
-                <ProtectedRoute element={<Home />} roles={["teacher"]} />
-              }
-            />
+            <Route exact path="/" element={<Home />} />
             <Route
               exact
               path="/ques/add"
