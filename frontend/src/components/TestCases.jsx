@@ -9,7 +9,7 @@ const TestCases = ({ handleSubmit, handleRun, testCases, processing }) => {
 
   return (
     <div className="p-4 bg-none rounded-md overflow-hidden">
-      <div className="flex items-center justify-between mb-4">
+      <div className="flex items-center justify-between">
         <div className="flex space-x-2">
           {testCases.map((_, idx) => (
             <button
@@ -26,9 +26,9 @@ const TestCases = ({ handleSubmit, handleRun, testCases, processing }) => {
           ))}
         </div>
       </div>
-      <div className="p-4 border-4 rounded-md bg-none  border-stone-800">
-        <div className="mb-4">
-          <p className="font-semibold">Input:</p>
+      <div className="p-2 bg-none border-stone-800">
+        <div className="mb-2">
+          <p className="font-semibold mb-2">Input:</p>
           <textarea
             value={testCases[activeTab]?.input || ""}
             readOnly
@@ -37,7 +37,7 @@ const TestCases = ({ handleSubmit, handleRun, testCases, processing }) => {
           />
         </div>
         <div>
-          <p className="font-semibold">Expected Output:</p>
+          <p className="font-semibold mb-2">Expected Output:</p>
           <textarea
             value={testCases[activeTab]?.output || ""}
             readOnly
@@ -46,7 +46,7 @@ const TestCases = ({ handleSubmit, handleRun, testCases, processing }) => {
           />
         </div>
       </div>
-      <div className="mt-4 flex gap-4">
+      <div className="mt-1 flex gap-4">
         <button
           onClick={() => {
             handleRun();

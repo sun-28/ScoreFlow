@@ -360,7 +360,12 @@ const Demo = () => {
             minSize={0}
           >
             <ProblemDescription details={details} />
-            <Split className="split-vertical" direction="vertical">
+            <Split
+              className="split-vertical"
+              direction="vertical"
+              sizes={[45, 60]}
+              gutterSize={15}
+             >
               <CodeEditor
                 code={code}
                 onChange={onChange}

@@ -5,7 +5,7 @@ const RunResultModal = ({ show, onClose, runResults }) => {
   console.log(runResults);
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-white p-6 rounded-lg shadow-lg w-full max-w-lg relative">
+      <div className="bg-stone-800 p-6 rounded-lg shadow-lg w-full max-w-lg relative">
         <button
           className="absolute top-2 right-2 text-gray-600 hover:text-gray-900"
           onClick={onClose}
@@ -19,10 +19,10 @@ const RunResultModal = ({ show, onClose, runResults }) => {
               key={index}
               className={`p-3 border rounded-md ${
                 result.passed === null
-                  ? "bg-gray-100 border-gray-400"
+                  ? "bg-stone-600 border-gray-400"
                   : result.passed
-                  ? "bg-green-100 border-green-400"
-                  : "bg-red-100 border-red-400"
+                  ? "bg-green-600 border-green-400"
+                  : "bg-red-600  border-red-400"
               }`}
             >
               <div>
