@@ -8,16 +8,16 @@ const TestCases = ({ handleSubmit, handleRun, testCases, processing }) => {
   };
 
   return (
-    <div className="p-4 bg-white border rounded-md overflow-hidden">
-      <div className="flex items-center justify-between mb-4">
+    <div className="p-4 bg-none rounded-md overflow-hidden">
+      <div className="flex items-center justify-between">
         <div className="flex space-x-2">
           {testCases.map((_, idx) => (
             <button
               key={idx}
               className={`px-4 py-2 border rounded-md ${
                 idx === activeTab
-                  ? "dark:bg-gray-800 text-white"
-                  : "bg-gray-100 text-gray-800 hover:bg-gray-400"
+                  ? "bg-stone-800 text-white border-green-600"
+                  : "bg-stone-800 text-white hover:bg-stone-400"
               } `}
               onClick={() => handleTabChange(idx)}
             >
@@ -26,36 +26,36 @@ const TestCases = ({ handleSubmit, handleRun, testCases, processing }) => {
           ))}
         </div>
       </div>
-      <div className="p-4 border border-gray-300 rounded-md bg-gray-50">
-        <div className="mb-4">
-          <p className="font-semibold">Input:</p>
+      <div className="p-2 bg-none border-stone-800">
+        <div className="mb-2">
+          <p className="font-semibold mb-2">Input:</p>
           <textarea
             value={testCases[activeTab]?.input || ""}
             readOnly
-            className="p-2 border border-gray-300 rounded-md bg-gray-100 w-full"
+            className="p-2 rounded-md bg-stone-800 w-full"
             rows="1"
           />
         </div>
         <div>
-          <p className="font-semibold">Expected Output:</p>
+          <p className="font-semibold mb-2">Expected Output:</p>
           <textarea
             value={testCases[activeTab]?.output || ""}
             readOnly
-            className="p-2 border border-gray-300 rounded-md bg-gray-100 w-full"
+            className="p-2 rounded-md bg-stone-800 w-full"
             rows="1"
           />
         </div>
       </div>
-      <div className="mt-4 flex gap-4">
+      <div className="mt-1 flex gap-4">
         <button
           onClick={() => {
             handleRun();
           }}
-          className={`w-full py-2 rounded-md ${
-            processing ? "bg-gray-500" : "bg-gray-800"
-          } text-white hover:${
-            processing ? "bg-gray-600" : "bg-gray-500"
-          } focus:outline-none focus:ring-2 focus:ring-gray-500`}
+          className={`w-full py-2 rounded-md text-white text-lg font-semibold ${
+            processing ? "bg-stone-500" : "bg-blue-700"
+          } hover:${
+            processing ? "bg-stone-600" : "bg-stone-500"
+          } focus:outline-none focus:ring-2 focus:ring-stone-500 transform transition-transform duration-200 hover:scale-105`}
           disabled={processing}
         >
           {processing ? "Processing..." : "Run Sample Test Cases"}
@@ -64,14 +64,14 @@ const TestCases = ({ handleSubmit, handleRun, testCases, processing }) => {
           onClick={() => {
             handleSubmit();
           }}
-          className={`w-full py-2 rounded-md ${
-            processing ? "bg-gray-500" : "bg-green-500"
-          } text-white hover:${
-            processing ? "bg-gray-600" : "bg-green-600"
-          } focus:outline-none focus:ring-2 focus:ring-green-500`}
+          className={`w-full py-2 rounded-md font-semibold text-lg text-white ${
+            processing
+              ? "bg-stone-800 hover:bg-stone-800"
+              : "bg-green-600 hover:bg-stone-600"
+          } focus:outline-none focus:ring-2 focus:ring-green-600 transform transition-transform duration-200 hover:scale-105`}
           disabled={processing}
         >
-          {processing ? "Processing..." : "Submit"}
+          {processing ? "Processing..." : "SUBMIT"}
         </button>
       </div>
     </div>

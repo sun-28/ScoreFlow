@@ -143,6 +143,9 @@ codeQueue.process(async (job) => {
       verdict = "error";
       io.to(socketId).emit("job-failed", { type, error: error.message });
     }
+
+    if(submissionId === "demo") return;
+    
     await Submission.findByIdAndUpdate(submissionId, { verdict , path : tempCodeFile });
 
     const test = await Test.findById(testId);
