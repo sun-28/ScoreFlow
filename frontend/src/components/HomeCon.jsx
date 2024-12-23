@@ -2,6 +2,7 @@ import { motion } from "framer-motion";
 import { FlaskConical, LaptopMinimal } from "lucide-react";
 import CodeCon from "../components/CodeCon";
 import Features from "../components/Features";
+import { Link } from "react-router-dom";
 function HomeCon() {
   return (
     <div className="mx-auto px-10 py-8 sm:py-12 lg:py-12">
@@ -39,20 +40,20 @@ function HomeCon() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 1.5, duration: 0.5 }}
           >
-            <a
-              href="/auth"
-              className="inline-flex items-center justify-center rounded-md bg-green-600 px-5 py-3 text-base font-medium text-white hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 transition-colors duration-200"
+            <Link
+              to="/auth"
+              className="inline-flex items-center justify-center rounded-md bg-green-600 px-5 py-3 text-base font-medium text-white focus:outline-none  transition-transform duration-200 transform hover:scale-110"
             >
               <LaptopMinimal className="mr-2 h-5 w-5" />
               Get Started
-            </a>
-            <a
-              href="/demo"
-              className="inline-flex ml-5 items-center justify-center rounded-md bg-stone-700 bg-opacity-90 px-5 py-3 text-base font-medium text-white hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 transition-colors duration-200"
+            </Link>
+            <Link
+              to="/demo"
+              className="inline-flex ml-5 items-center justify-center rounded-md bg-stone-700 bg-opacity-90 px-5 py-3 text-base font-medium text-white  focus:outline-none  transition-transform duration-200 transform hover:scale-110"
             >
               <FlaskConical className="mr-2 h-5 w-5" />
               Demo
-            </a>
+            </Link>
           </motion.div>
         </div>
         <div className="mt-8 lg:mt-0">

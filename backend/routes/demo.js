@@ -4,7 +4,7 @@ const router = express.Router();
 
 
 router.get("/getDetails/:quesid",getDetails);
-router.post("/submit", submit("submit"));
-router.post("/runSampleTestCases",submit("run"));
+router.post("/submit", submit);
+router.post("/run",submit);
 
 module.exports = router;

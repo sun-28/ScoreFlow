@@ -18,6 +18,10 @@ const CodeEditor = ({ code, onChange, language, onLanguageChange, testid }) => {
 
   const fetchTimeRemaining = async () => {
     try {
+      if (testid === "demo") {
+        setTimeRemaining(5 * 60 * 1000 + 2000);
+        return;
+      }
       const response = await axiosInstance.get(`/test/remainingTime/${testid}`);
       setTimeRemaining(response.data.timeRemaining);
     } catch (err) {
@@ -92,11 +96,11 @@ const CodeEditor = ({ code, onChange, language, onLanguageChange, testid }) => {
 
   return (
     <div className="editor-container">
-      <div className="code-editor-heading p-1 flex items-center justify-between mb-1">
+      <div className="code-editor-heading p-1 flex items-center justify-between my-1 mx-1">
         <select
           value={language}
           onChange={handleLanguageChange}
-          className="p-1 border border-gray-800 rounded-md bg-gray-100 shadow-sm"
+          className="p-1 border border-green-600 rounded-md bg-stone-800 shadow-sm"
         >
           <option value="javascript">JavaScript</option>
           <option value="cpp">C++</option>
@@ -104,7 +108,7 @@ const CodeEditor = ({ code, onChange, language, onLanguageChange, testid }) => {
           <option value="java">Java</option>
         </select>
         <div className="flex gap-1">
-          <div className="w-24 flex gap-2 items-center p-1 border border-gray-800 rounded-md bg-gray-100 shadow-s">
+          <div className="w-20 flex gap-2 items-center p-1 px-2 border border-green-600 rounded-md bg-stone-800 shadow-s">
             <svg
               xmlns="http://www.w3.org/2000/svg"
               fill="none"
@@ -122,8 +126,8 @@ const CodeEditor = ({ code, onChange, language, onLanguageChange, testid }) => {
             {timeRemaining > 0 ? formatTime(timeRemaining) : "Time's up!"}
           </div>
           <Link
-            to={`/test/${testid}`}
-            className="p-1 border border-gray-800 rounded-md bg-gray-100 shadow-sm hover:bg-slate-700 hover:text-white"
+            to={testid === "demo" ? "/" : `/test/${testid}`}
+            className="p-1 border border-green-600 rounded-md bg-stone-800 shadow-sm hover:bg-stone-500 hover:text-white"
           >
             <svg
               xmlns="http://www.w3.org/2000/svg"
@@ -147,6 +151,7 @@ const CodeEditor = ({ code, onChange, language, onLanguageChange, testid }) => {
         height={`86%`}
         language={language}
         value={code}
+        theme="vs-dark"
         onChange={handleEditorChange}
         onMount={handleEditorDidMount}
       />

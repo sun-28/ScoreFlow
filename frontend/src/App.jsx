@@ -1,4 +1,4 @@
-import React, { useContext } from "react";
+import React, { useContext, useEffect } from "react";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import Home from "./pages/Home";
@@ -17,27 +17,39 @@ import Profile from "./pages/Profile";
 import QuestionsList from "./pages/QuestionsList";
 import ReviewTests from "./pages/ReviewTests";
 import TestReview from "./pages/TestReview";
+import Demo from "./pages/Demo";
+import Error from "./pages/Error";
 import Navbar2 from "./components/Navbar2";
 
 const App = () => {
   const location = useLocation();
   const { currUser } = useContext(userContext);
 
-  const hide = ["/auth","/"];
+  const hide = ["/auth", "/", "/demo", "/error"];
   const isStudent = currUser?.role === "student";
+
+  useEffect(() => {
+    if (location.pathname === "/demo") {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "auto";
+    }
+  }, [location]);
 
   return (
     <>
       <ToastContainer />
       {!hide.includes(location.pathname) && <Navbar />}
 
-      <div className="flex">
+      <div className="flex bg-stone-800">
         {!hide.includes(location.pathname) && !isStudent && <SideBar />}
-
+        <Navbar2/>
         <div className="main flex-1">
           <Routes>
             <Route exact path="/auth" element={<Auth />} />
             <Route exact path="/" element={<Home />} />
+            <Route exact path="/demo" element={<Demo />} />
+            <Route exact path="/error" element={<Error />} />
             <Route
               exact
               path="/ques/add"
