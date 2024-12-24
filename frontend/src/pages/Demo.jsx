@@ -12,8 +12,10 @@ import Navbar2 from "../components/Navbar2";
 import "../loader.scss";
 
 const SOCKET_SERVER_URL = import.meta.env.VITE_SOCKET_SERVER_URL;
-const socket = io(SOCKET_SERVER_URL,{secure: true});
-
+const socket = io(SOCKET_SERVER_URL,{
+    path: '/socket.io/', 
+    transports: ['websocket'], 
+});
 const Demo = () => {
   const [details, setDetails] = useState(null);
   const [testCases, setTestCases] = useState([]);
