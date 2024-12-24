@@ -4,8 +4,6 @@ WORKDIR /app
 
 COPY javaTLE.sh /app/entrypoint.sh
 
-RUN apk add --no-cache dos2unix && dos2unix /app/entrypoint.sh
-
 RUN chmod +x /app/entrypoint.sh
 
 ENTRYPOINT ["/app/entrypoint.sh"]

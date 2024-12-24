@@ -41,7 +41,8 @@ const imageSelector = (lang) => {
 };
 
 const findError = (stderr) => {
-  if (stderr.killed || stderr.code === 137) return "Time Limit Exceeded";
+  console.log(stderr);
+  if (stderr.killed || stderr.code === 124) return "Time Limit Exceeded";
   const err = stderr.stdout || stderr.message;
   if (err.includes("out of memory")) return "Memory Limit Exceeded";
   if (err.includes("Compilation error") || err.includes("error:"))
@@ -91,7 +92,6 @@ codeQueue.process(async (job) => {
     try {
       for (let i = 0; i < testCases.length; i++) {
         const { input, output } = testCases[i];
-        console.log(input, output);
         const testFile = crypto.randomUUID();
         const tempInputFile = path.join(
           __dirname,
@@ -100,7 +100,9 @@ codeQueue.process(async (job) => {
 
         fs.writeFileSync(tempInputFile, input);
 
-        const dockerCommand = `docker run --rm --memory=${MEMORY_LIMIT} -v ${tempCodeFile}:/app/Main.${language} -v ${tempInputFile}:/app/input.txt ${dockerImage}`;
+        const dockerCommand = `docker run --rm --memory=${MEMORY_LIMIT} -v ${tempCodeFile}:/app/Main.${
+          language === "python" ? "py" : language
+        } -v ${tempInputFile}:/app/input.txt ${dockerImage}`;
 
         try {
           const { stdout, stderr } = await execPromise(dockerCommand);
@@ -121,8 +123,6 @@ codeQueue.process(async (job) => {
 
           if (!passed) verdict = "failed";
         } catch (error) {
-          console.log(error);
-
           errorMessage = findError(error);
 
           const testCaseResult = {
@@ -144,9 +144,12 @@ codeQueue.process(async (job) => {
       io.to(socketId).emit("job-failed", { type, error: error.message });
     }
 
-    if(submissionId === "demo") return;
-    
-    await Submission.findByIdAndUpdate(submissionId, { verdict , path : tempCodeFile });
+    if (submissionId === "demo") return;
+
+    await Submission.findByIdAndUpdate(submissionId, {
+      verdict,
+      path: tempCodeFile,
+    });
 
     const test = await Test.findById(testId);
 
@@ -186,8 +189,6 @@ codeQueue.process(async (job) => {
 
     test.markModified("submissions");
 
-    console.log(test.submissions)
-
     await test.save();
   } else {
     for (let i = 0; i < sampleTestCases.length; i++) {
@@ -201,7 +202,9 @@ codeQueue.process(async (job) => {
 
       fs.writeFileSync(tempInputFile, input);
 
-      const dockerCommand = `docker run --rm --memory=${MEMORY_LIMIT} -v ${tempCodeFile}:/app/Main.${language} -v ${tempInputFile}:/app/input.txt ${dockerImage}`;
+      const dockerCommand = `docker run --rm --memory=${MEMORY_LIMIT} -v ${tempCodeFile}:/app/Main.${
+        language === "python" ? "py" : language
+      } -v ${tempInputFile}:/app/input.txt ${dockerImage}`;
 
       try {
         const { stdout, stderr } = await execPromise(dockerCommand);
@@ -235,7 +238,7 @@ codeQueue.process(async (job) => {
       }
     }
 
-    io.to(socketId).emit("job-completed", { type, status : "completed" });
+    io.to(socketId).emit("job-completed", { type, status: "completed" });
   }
 });
 
