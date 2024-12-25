@@ -42,7 +42,8 @@ function HomeCon() {
           >
             <Link
               to="/auth"
-              className="inline-flex items-center justify-center rounded-md bg-green-600 px-5 py-3 text-base font-medium text-white focus:outline-none  transition-transform duration-200 transform hover:scale-110"
+              tabIndex={-1}
+              className="pointer-events-none cursor-not-allowed inline-flex items-center justify-center rounded-md bg-green-600 px-5 py-3 text-base font-medium text-white focus:outline-none  transition-transform duration-200 transform hover:scale-110"
             >
               <LaptopMinimal className="mr-2 h-5 w-5" />
               Get Started
